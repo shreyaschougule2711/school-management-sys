@@ -1,0 +1,59 @@
+{
+  "books": [
+    {
+      "id": 1,
+      "title": "Mathematics - Class 10",
+      "author": "R.D. Sharma",
+      "category": "Textbook",
+      "available": 15,
+      "total": 20,
+      "isbn": "978-8193046456"
+    },
+    {
+      "id": 2,
+      "title": "Science Lab Manual",
+      "author": "NCERT",
+      "category": "Lab Manual",
+      "available": 8,
+      "total": 10,
+      "isbn": "978-8174501234"
+    },
+    {
+      "id": 3,
+      "title": "English Literature",
+      "author": "William Shakespeare",
+      "category": "Literature",
+      "available": 5,
+      "total": 12,
+      "isbn": "978-8174505678"
+    },
+    {
+      "id": 4,
+      "title": "Hindi Vyakaran",
+      "author": "Vasant Bhag 2",
+      "category": "Textbook",
+      "available": 10,
+      "total": 15,
+      "isbn": "978-8174509012"
+    },
+    {
+      "id": 5,
+      "title": "Social Science - History",
+      "author": "NCERT",
+      "category": "Textbook",
+      "available": 12,
+      "total": 18,
+      "isbn": "978-8174503456"
+    },
+    {
+      "id": 6,
+      "title": "Computer Science Fundamentals",
+      "author": "Sumita Arora",
+      "category": "Reference",
+      "available": 6,
+      "total": 8,
+      "isbn": "978-8174507890"
+    }
+  ],
+  "issuedBooks": []
+}

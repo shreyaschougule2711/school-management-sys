@@ -1,0 +1,15 @@
+[
+  {
+    "standard": "8th",
+    "schedule": [
+      {
+        "time": "08:30 - 12:30",
+        "mon": "maths",
+        "tue": "english ",
+        "wed": "hindi ",
+        "thu": "marathi",
+        "fri": "social science"
+      }
+    ]
+  }
+]

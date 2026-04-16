@@ -1,0 +1,68 @@
+[
+  {
+    "id": 1776362560783.992,
+    "studentId": 1776360410254,
+    "studentName": "Rahul Sharma",
+    "standard": "8th",
+    "date": "2026-04-03",
+    "status": "Present",
+    "teacherId": 1776362450743,
+    "teacherName": "Shreyas",
+    "markedAt": "2026-04-16T18:02:40.783Z"
+  },
+  {
+    "id": 1776362560783.311,
+    "studentId": 1776360685417,
+    "studentName": "Rahul Sharma",
+    "standard": "8th",
+    "date": "2026-04-03",
+    "status": "Present",
+    "teacherId": 1776362450743,
+    "teacherName": "Shreyas",
+    "markedAt": "2026-04-16T18:02:40.783Z"
+  },
+  {
+    "id": 1776362907120.1223,
+    "studentId": 1776360410254,
+    "studentName": "Rahul Sharma",
+    "standard": "8th",
+    "date": "2026-04-16",
+    "status": "Present",
+    "teacherId": 1,
+    "teacherName": "Admin User",
+    "markedAt": "2026-04-16T18:08:27.120Z"
+  },
+  {
+    "id": 1776362907120.9873,
+    "studentId": 1776360685417,
+    "studentName": "Rahul Sharma",
+    "standard": "8th",
+    "date": "2026-04-16",
+    "status": "Present",
+    "teacherId": 1,
+    "teacherName": "Admin User",
+    "markedAt": "2026-04-16T18:08:27.120Z"
+  },
+  {
+    "id": 1776367386302.1753,
+    "studentId": 1776360410254,
+    "studentName": "Rahul Sharma",
+    "standard": "8th",
+    "date": "2026-04-17",
+    "status": "Present",
+    "teacherId": 1776362450743,
+    "teacherName": "Shreyas",
+    "markedAt": "2026-04-16T19:23:06.302Z"
+  },
+  {
+    "id": 1776367386302.866,
+    "studentId": 1776360685417,
+    "studentName": "Rahul Sharma",
+    "standard": "8th",
+    "date": "2026-04-17",
+    "status": "Present",
+    "teacherId": 1776362450743,
+    "teacherName": "Shreyas",
+    "markedAt": "2026-04-16T19:23:06.302Z"
+  }
+]

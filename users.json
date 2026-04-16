@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "name": "Sample Student",
+    "role": "student",
+    "email": "student@zenithacademy.com",
+    "password": "password123"
+  },
+  {
+    "id": 2,
+    "name": "Sample Teacher",
+    "role": "teacher",
+    "email": "teacher@zenithacademy.com",
+    "password": "password123"
+  },
+  {
+    "id": 3,
+    "name": "Admin User",
+    "role": "admin",
+    "email": "admin@zenithacademy.com",
+    "password": "password123"
+  },
+  {
+    "id": 1776357980295,
+    "name": "Shreyas",
+    "email": "shreyaschougule2711@gmail.com",
+    "password": "12345",
+    "role": "student"
+  }
+]

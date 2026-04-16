@@ -1,0 +1,43 @@
+[
+  {
+    "studentId": 1776360410254,
+    "studentName": "Rahul Sharma",
+    "standard": "8th",
+    "tuitionFee": 25000,
+    "examFee": 3000,
+    "libraryFee": 1500,
+    "sportsFee": 2000,
+    "totalFee": 31500,
+    "paidAmount": 110,
+    "status": "Partial",
+    "payments": [
+      {
+        "id": 1776362749745,
+        "amount": 10,
+        "method": "UPI",
+        "date": "2026-04-16T18:05:49.745Z",
+        "receiptNo": "PVD-62749745"
+      },
+      {
+        "id": 1776367668794,
+        "amount": 100,
+        "method": "UPI",
+        "date": "2026-04-16T19:27:48.794Z",
+        "receiptNo": "PVD-67668794"
+      }
+    ]
+  },
+  {
+    "studentId": 1776360685417,
+    "studentName": "Rahul Sharma",
+    "standard": "8th",
+    "tuitionFee": 25000,
+    "examFee": 3000,
+    "libraryFee": 1500,
+    "sportsFee": 2000,
+    "totalFee": 31500,
+    "paidAmount": 0,
+    "status": "Unpaid",
+    "payments": []
+  }
+]

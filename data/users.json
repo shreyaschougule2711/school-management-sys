@@ -1,0 +1,61 @@
+[
+  {
+    "id": 1,
+    "name": "Admin User",
+    "role": "admin",
+    "email": "admin@parishramvidyalay.edu",
+    "password": "admin123"
+  },
+  {
+    "id": 1776360410254,
+    "name": "Rahul Sharma",
+    "email": "rahul@test.com",
+    "password": "1234",
+    "role": "student",
+    "standard": "8th",
+    "phone": "9876543210",
+    "parentName": "Suresh Sharma",
+    "createdAt": "2026-04-16T17:26:50.254Z"
+  },
+  {
+    "id": 1776360685417,
+    "name": "Rahul Sharma",
+    "email": "rahul_new@test.com",
+    "password": "1234",
+    "role": "student",
+    "standard": "8th",
+    "phone": "9876543210",
+    "parentName": "Suresh Sharma",
+    "createdAt": "2026-04-16T17:31:25.417Z"
+  },
+  {
+    "id": 1776361395998,
+    "name": "Priya Patel",
+    "email": "priya@test.com",
+    "password": "123412341234",
+    "role": "teacher",
+    "phone": "9988776655",
+    "subject": "Mathematics",
+    "createdAt": "2026-04-16T17:43:15.998Z"
+  },
+  {
+    "id": 1776361917569,
+    "name": "Priya Patel",
+    "email": "priya.patel@test.com",
+    "password": "1234",
+    "role": "teacher",
+    "phone": "9988776655",
+    "subject": "Mathematics",
+    "createdAt": "2026-04-16T17:51:57.569Z"
+  },
+  {
+    "id": 1776362450743,
+    "name": "Shreyas",
+    "email": "shreyaschougule2711@gmail.com",
+    "password": "1234567",
+    "role": "teacher",
+    "phone": "8379801244",
+    "subject": "English",
+    "createdAt": "2026-04-16T18:00:50.743Z"
+  }
+]
