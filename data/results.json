@@ -1,1 +1,80 @@
-[]
+[
+  {
+    "id": 1776419858074,
+    "studentId": 1776360410254,
+    "studentName": "Rahul Sharma",
+    "standard": "8th",
+    "subject": "English",
+    "internal": 17,
+    "theory": 74,
+    "total": 91,
+    "grade": "A+",
+    "published": true,
+    "date": "2026-04-17T09:57:38.074Z"
+  },
+  {
+    "id": 1776419869578,
+    "studentId": 1776360410254,
+    "studentName": "Rahul Sharma",
+    "standard": "8th",
+    "subject": "Mathematics",
+    "internal": 19,
+    "theory": 78,
+    "total": 97,
+    "grade": "A+",
+    "published": true,
+    "date": "2026-04-17T09:57:49.578Z"
+  },
+  {
+    "id": 1776419887774,
+    "studentId": 1776360410254,
+    "studentName": "Rahul Sharma",
+    "standard": "8th",
+    "subject": "Computer Science",
+    "internal": 18,
+    "theory": 75,
+    "total": 93,
+    "grade": "A+",
+    "published": true,
+    "date": "2026-04-17T09:58:07.774Z"
+  },
+  {
+    "id": 1776419899797,
+    "studentId": 1776360410254,
+    "studentName": "Rahul Sharma",
+    "standard": "8th",
+    "subject": "Science",
+    "internal": 20,
+    "theory": 80,
+    "total": 100,
+    "grade": "A+",
+    "published": true,
+    "date": "2026-04-17T09:58:19.797Z"
+  },
+  {
+    "id": 1776419915226,
+    "studentId": 1776360410254,
+    "studentName": "Rahul Sharma",
+    "standard": "8th",
+    "subject": "History",
+    "internal": 15,
+    "theory": 72,
+    "total": 87,
+    "grade": "A",
+    "published": true,
+    "date": "2026-04-17T09:58:35.226Z"
+  },
+  {
+    "id": 1776419927116,
+    "studentId": 1776360410254,
+    "studentName": "Rahul Sharma",
+    "standard": "8th",
+    "subject": "Geography",
+    "internal": 16,
+    "theory": 65,
+    "total": 81,
+    "grade": "A",
+    "published": true,
+    "date": "2026-04-17T09:58:47.116Z"
+  }
+]

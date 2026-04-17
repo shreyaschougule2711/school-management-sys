@@ -227,13 +227,14 @@ const Attendance = () => {
         </div>
       </div>
 
-      <div className="controls-row">
+      <div className="controls-row table-responsive" style={{ paddingBottom: '10px' }}>
         <div className="class-tabs">
           {STANDARDS.map(std => (
             <button
               key={std}
               className={`class-tab ${selectedClass === std ? 'active' : ''}`}
               onClick={() => setSelectedClass(std)}
+              style={{ whiteSpace: 'nowrap' }}
             >
               {std} Std
             </button>
@@ -271,7 +272,7 @@ const Attendance = () => {
           <p>No students registered in {selectedClass} Standard yet.</p>
         </div>
       ) : (
-        <div className="attendance-grid glass-card">
+      <div className="attendance-grid glass-card table-responsive">
           {students.map((student, i) => (
             <motion.div 
               key={student.id} 

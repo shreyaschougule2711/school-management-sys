@@ -17,7 +17,7 @@ const Timetable = () => {
       }).catch(()=>{});
   }, [user]);
 
-  const days = ['mon', 'tue', 'wed', 'thu', 'fri'];
+  const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
   return (
     <div className="timetable-page">
@@ -33,8 +33,8 @@ const Timetable = () => {
           <p className="text-muted mt-2">The administration has not set the timetable for your class yet.</p>
         </div>
       ) : (
-        <div className="glass-card mt-8 overflow-hidden">
-          <table className="timetable-table">
+        <div className="glass-card mt-8 table-responsive">
+          <table className="timetable-table" style={{ minWidth: '800px' }}>
             <thead>
               <tr>
                 <th><Clock size={16}/> Time Slot</th>
@@ -43,6 +43,7 @@ const Timetable = () => {
                 <th>Wednesday</th>
                 <th>Thursday</th>
                 <th>Friday</th>
+                <th>Saturday</th>
               </tr>
             </thead>
             <tbody>
@@ -50,7 +51,7 @@ const Timetable = () => {
                 <tr key={i} className={row.break ? 'break-row' : ''}>
                   <td className="time-slot">{row.time}</td>
                   {row.break ? (
-                    <td colSpan="5" className="break-text">Short Interval / Recess</td>
+                    <td colSpan="6" className="break-text">Short Interval / Recess</td>
                   ) : (
                     days.map(day => (
                       <td key={day}>

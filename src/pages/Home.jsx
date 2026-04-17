@@ -2,23 +2,26 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, BookOpen, Users, Trophy, Bell, Settings, Award } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import heroBg from '../assets/images/hero-bg.png';
+import heroBg from '../assets/hero_actual.jpg';
+import principalImg from '../assets/principal.jpg';
 
 const Home = () => {
   const [events, setEvents] = useState([]);
   const [infra, setInfra] = useState([]);
   const [teachers, setTeachers] = useState([]);
+  const [gallery, setGallery] = useState([]);
 
   useEffect(() => {
-    fetch('/api/events').then(r => r.json()).then(setEvents).catch(()=>{});
-    fetch('/api/infrastructure').then(r => r.json()).then(setInfra).catch(()=>{});
-    fetch('/api/teachers').then(r => r.json()).then(setTeachers).catch(()=>{});
+    fetch('/api/events').then(r => r.json()).then(setEvents).catch(() => { });
+    fetch('/api/infrastructure').then(r => r.json()).then(setInfra).catch(() => { });
+    fetch('/api/teachers').then(r => r.json()).then(setTeachers).catch(() => { });
+    fetch('/api/gallery').then(r => r.json()).then(setGallery).catch(() => { });
   }, []);
 
   const highlights = [
-    { icon: <BookOpen className="w-8 h-8"/>, title: 'Academic Excellence', desc: 'Ranked #1 in state for STEM education and holistic learning.' },
-    { icon: <Users className="w-8 h-8"/>, title: 'Expert Faculty', desc: 'Over 100+ PhD and Master-level educators dedicated to student growth.' },
-    { icon: <Trophy className="w-8 h-8"/>, title: 'Modern Infrastructure', desc: 'State-of-the-art labs, library, and sports facilities.' },
+    { icon: <BookOpen className="w-8 h-8" />, title: 'Academic Excellence', desc: 'Ranked #1 in state for STEM education and holistic learning.' },
+    { icon: <Users className="w-8 h-8" />, title: 'Expert Faculty', desc: 'Over 100+ PhD and Master-level educators dedicated to student growth.' },
+    { icon: <Trophy className="w-8 h-8" />, title: 'Modern Infrastructure', desc: 'State-of-the-art labs, library, and sports facilities.' },
   ];
 
   return (
@@ -28,7 +31,7 @@ const Home = () => {
         <div className="hero-overlay"></div>
         <img src={heroBg} alt="School Campus" className="hero-img" />
         <div className="container hero-content">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
@@ -36,11 +39,11 @@ const Home = () => {
             <span className="badge">Welcome to Parishram Vidyalay Dundage</span>
             <h1>Empowering Minds for a <span className="gradient-text">Brighter Future</span></h1>
             <p className="hero-subtitle">
-              Nurturing character, excellence, and global citizenship through 
+              Nurturing character, excellence, and global citizenship through
               innovative education and personal mentorship.
             </p>
             <div className="hero-btns">
-              <Link to="/admissions" className="btn btn-primary">Apply Now <ArrowRight size={20}/></Link>
+              <Link to="/admissions" className="btn btn-primary">Apply Now <ArrowRight size={20} /></Link>
               <Link to="/about" className="btn btn-secondary">Explore Campus</Link>
             </div>
           </motion.div>
@@ -59,6 +62,34 @@ const Home = () => {
         </div>
       </div>
 
+      {/* Scrolling Gallery Highlights */}
+      {gallery.length > 0 && (
+        <section className="gallery-highlights overflow-hidden py-10" style={{ background: 'var(--bg-hover)', borderBottom: '1px solid var(--border)' }}>
+          <div className="container">
+            <div className="section-header-compact mb-6" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '4px', height: '24px', background: 'var(--primary)', borderRadius: '2px' }}></div>
+              <br></br>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800 }}>CAMPUS HIGHLIGHTS</h3>
+            </div>
+
+            <div className="gallery-scroll-wrapper">
+              <div className="gallery-scroll-content">
+                {[...gallery, ...gallery].map((img, idx) => (
+                  <div
+                    key={idx}
+                    className="gallery-item-card"
+                    style={{ flexShrink: 0, width: '300px', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border)', background: 'var(--bg-main)' }}
+                  >
+                    <img src={img.imageBase64} alt={img.title} style={{ width: '100%', height: '180px', objectFit: 'cover' }} />
+                    <div style={{ padding: '12px', textAlign: 'center', fontSize: '0.9rem', fontWeight: 600 }}>{img.title}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Dynamic Admin Events / Highlights Section */}
       {events.length > 0 && (
         <section className="section-padding" style={{ background: 'var(--bg-main)' }}>
@@ -69,8 +100,8 @@ const Home = () => {
             </div>
             <div className="highlights-grid">
               {events.map((ev, idx) => (
-                <motion.div key={idx} whileHover={{ y: -10 }} className="highlight-card glass-card p-8" style={{ border: '1px solid var(--primary)'}}>
-                  <div className="icon-wrapper" style={{ background: 'var(--grad-fresh)' }}><Trophy className="w-8 h-8"/></div>
+                <motion.div key={idx} whileHover={{ y: -10 }} className="highlight-card glass-card p-8" style={{ border: '1px solid var(--primary)' }}>
+                  <div className="icon-wrapper" style={{ background: 'var(--grad-fresh)' }}><Trophy className="w-8 h-8" /></div>
                   <h3>{ev.title}</h3>
                   <p>{ev.description}</p>
                 </motion.div>
@@ -108,16 +139,24 @@ const Home = () => {
           </div>
           <div className="faculty-grid">
             <div className="faculty-card principal-card glass-card">
-              <div className="faculty-avatar">P</div>
+              <div className="faculty-avatar">
+                <img src={principalImg} alt="Principal" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+              </div>
               <div className="faculty-info">
-                <h3>Dr. R. K. Sharma</h3>
+                <h3>D.G. DIWATE</h3>
                 <span className="faculty-role">Principal</span>
-                <span className="faculty-degree">Ph.D. in Education Management</span>
+                <span className="faculty-degree">M.A., B.Ed.</span>
               </div>
             </div>
             {teachers.map((t, idx) => (
               <div key={idx} className="faculty-card glass-card">
-                <div className="faculty-avatar">{t.name.charAt(0).toUpperCase()}</div>
+                <div className="faculty-avatar">
+                  {t.profileImage ? (
+                    <img src={t.profileImage} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                  ) : (
+                    t.name.charAt(0).toUpperCase()
+                  )}
+                </div>
                 <div className="faculty-info">
                   <h3>{t.name}</h3>
                   <span className="faculty-subject">{t.subject || 'General Studies'}</span>
@@ -197,6 +236,14 @@ const Home = () => {
         .status-badge { font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 12px; }
         .status-badge.available { background: #d1fae5; color: #065f46; }
         .status-badge.maintenance { background: #fee2e2; color: #b91c1c; }
+
+        .gallery-scroll-wrapper { overflow: hidden; position: relative; padding: 20px 0; }
+        .gallery-scroll-content { display: flex; gap: 20px; animation: scroll-left 40s linear infinite; width: max-content; }
+        .gallery-scroll-content:hover { animation-play-state: paused; }
+        @keyframes scroll-left {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
 
         .p-8 { padding: 2rem; }
         .text-center { text-align: center; }

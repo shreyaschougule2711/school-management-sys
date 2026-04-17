@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, Mail, KeyRound, Eye, EyeOff, UserPlus, Phone, BookOpen, Users } from 'lucide-react';
+import { User, Mail, KeyRound, Eye, EyeOff, UserPlus, Phone, BookOpen, Users, Award } from 'lucide-react';
 
 const STANDARDS = ['5th', '6th', '7th', '8th', '9th', '10th'];
 const SUBJECTS = ['Mathematics', 'Science', 'English', 'Hindi', 'Social Studies', 'Computer Science', 'Physical Education', 'Art'];
@@ -15,6 +15,7 @@ const Register = () => {
   const [standard, setStandard] = useState('5th');
   const [parentName, setParentName] = useState('');
   const [subject, setSubject] = useState('Mathematics');
+  const [degree, setDegree] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -40,6 +41,7 @@ const Register = () => {
           standard: role === 'student' ? standard : undefined,
           parentName: role === 'student' ? parentName : undefined,
           subject: role === 'teacher' ? subject : undefined,
+          degree: role === 'teacher' ? degree : undefined,
         }),
       });
       const data = await response.json();
@@ -73,7 +75,7 @@ const Register = () => {
         >
           <div className="auth-header">
             <div className="auth-logo">
-              <div className="auth-logo-icon">प</div>
+              <img src="/assets/logo.png" alt="School Logo" className="auth-logo-img" />
             </div>
             <h2>Create Account</h2>
             <p>Join the Parishram Vidyalay Dundage community</p>
@@ -161,13 +163,25 @@ const Register = () => {
             )}
 
             {role === 'teacher' && (
-              <div className="form-group">
-                <label><BookOpen size={15}/> Subject Specialization</label>
-                <select value={subject} onChange={(e) => setSubject(e.target.value)}>
-                  {SUBJECTS.map(s => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
+              <div className="form-row">
+                <div className="form-group">
+                  <label><BookOpen size={15}/> Subject Specialization</label>
+                  <select value={subject} onChange={(e) => setSubject(e.target.value)}>
+                    {SUBJECTS.map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label><Award size={15}/> Degree / Qualification</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. M.Sc. B.Ed." 
+                    value={degree}
+                    onChange={(e) => setDegree(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
             )}
 
@@ -294,18 +308,14 @@ const Register = () => {
           margin-bottom: 20px;
         }
 
-        .auth-logo-icon {
-          width: 56px;
-          height: 56px;
-          background: var(--grad-primary);
-          border-radius: 16px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          font-weight: 900;
-          font-size: 1.5rem;
-          box-shadow: 0 8px 20px rgba(99, 102, 241, 0.35);
+        .auth-logo-img {
+          width: 70px;
+          height: 70px;
+          object-fit: contain;
+          border-radius: 50%;
+          background: white;
+          padding: 4px;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
         }
 
         .auth-header h2 {

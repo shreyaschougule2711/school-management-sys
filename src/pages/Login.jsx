@@ -56,7 +56,7 @@ const Login = () => {
         >
           <div className="auth-header">
             <div className="auth-logo">
-              <div className="auth-logo-icon">प</div>
+              <img src="/assets/logo.png" alt="School Logo" className="auth-logo-img" />
             </div>
             <h2>Welcome Back</h2>
             <p>Sign in to your Parishram Vidyalay account</p>
@@ -220,18 +220,14 @@ const Login = () => {
           margin-bottom: 20px;
         }
 
-        .auth-logo-icon {
-          width: 56px;
-          height: 56px;
-          background: var(--grad-primary);
-          border-radius: 16px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          font-weight: 900;
-          font-size: 1.5rem;
-          box-shadow: 0 8px 20px rgba(99, 102, 241, 0.35);
+        .auth-logo-img {
+          width: 70px;
+          height: 70px;
+          object-fit: contain;
+          border-radius: 50%;
+          background: white;
+          padding: 4px;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
         }
 
         .auth-header h2 {

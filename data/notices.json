@@ -1,12 +1,5 @@
 [
   {
-    "id": 1,
-    "title": "Annual Sports Meet",
-    "date": "2026-05-15",
-    "tag": "Event",
-    "content": "Annual sports meet will be held on May 15th."
-  },
-  {
     "id": 2,
     "title": "Final Exam Schedule Out",
     "date": "2026-06-01",

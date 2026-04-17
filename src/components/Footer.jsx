@@ -7,7 +7,8 @@ const Footer = () => {
       <div className="container">
         <div className="footer-grid">
           <div className="footer-brand">
-            <div className="logo-container mb-6">
+            <div className="footer-logo-wrap mb-4">
+              <img src="/assets/logo.png" alt="School Logo" className="footer-logo-img" />
               <span className="school-name">Parishram Vidyalay Dundage</span>
             </div>
             <p className="school-desc">
@@ -48,15 +49,15 @@ const Footer = () => {
             <ul className="contact-info">
               <li>
                 <MapPin size={18} className="contact-icon" />
-                <span>123 Education Boulevard, Tech City, ST 12345</span>
+                <span>At Post Dundage, Tal - Gadhinglaj Pincode - 416501</span>
               </li>
               <li>
                 <Phone size={18} className="contact-icon" />
-                <span>+1 (555) 123-4567</span>
+                <span>+91 8379801244</span>
               </li>
               <li>
                 <Mail size={18} className="contact-icon" />
-                <span>contact@parishramvidyalay.edu</span>
+                <span>contact@parishramvidyalay.in</span>
               </li>
             </ul>
           </div>
@@ -81,6 +82,21 @@ const Footer = () => {
           grid-template-columns: 2fr 1fr 1fr 1.5fr;
           gap: 60px;
           margin-bottom: 60px;
+        }
+
+        .footer-logo-wrap {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        
+        .footer-logo-img {
+          width: 48px;
+          height: 48px;
+          object-fit: contain;
+          border-radius: 50%;
+          background: white;
+          padding: 2px;
         }
 
         .footer-brand .school-name {

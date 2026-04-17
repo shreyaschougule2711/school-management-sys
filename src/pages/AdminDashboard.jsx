@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Users, GraduationCap, Settings, Briefcase, BookOpen, TrendingUp, Calendar, FileText, CheckSquare, Settings as SettingsIcon, Bell } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 const STANDARDS = ['5th', '6th', '7th', '8th', '9th', '10th'];
 
@@ -19,6 +19,12 @@ const AdminDashboard = () => {
   const [timetables, setTimetables] = useState([]);
   const [results, setResults] = useState([]);
   const [toast, setToast] = useState(null);
+  const [ttRows, setTtRows] = useState(Array(8).fill({ time: '', mon: '', tue: '', wed: '', thu: '', fri: '', sat: '' }));
+  const [gallery, setGallery] = useState([]);
+  const [notices, setNotices] = useState([]);
+  const [ttStandard, setTtStandard] = useState('');
+  const [feeConfigs, setFeeConfigs] = useState([]);
+  const [currentFeeConfig, setCurrentFeeConfig] = useState({ standard: '', tuitionFee: 0, examFee: 0, libraryFee: 0, sportsFee: 0 });
 
   useEffect(() => {
     fetchStats();
@@ -26,6 +32,9 @@ const AdminDashboard = () => {
     fetchInfra();
     fetchTimetables();
     fetchResults();
+    fetchGallery();
+    fetchNotices();
+    fetchFeeConfigs();
   }, []);
 
   const showToast = (msg, type = 'success') => {
@@ -49,6 +58,16 @@ const AdminDashboard = () => {
   const fetchInfra = () => fetch('/api/infrastructure').then(r => r.json()).then(setInfra).catch(()=>{});
   const fetchTimetables = () => fetch('/api/timetables').then(r => r.json()).then(setTimetables).catch(()=>{});
   const fetchResults = () => fetch('/api/results').then(r => r.json()).then(setResults).catch(()=>{});
+  const fetchGallery = () => fetch('/api/gallery').then(r => r.json()).then(setGallery).catch(()=>{});
+  const fetchNotices = () => fetch('/api/notices').then(r => r.json()).then(setNotices).catch(()=>{});
+  const fetchFeeConfigs = () => fetch('/api/fee-config').then(r => r.json()).then(setFeeConfigs).catch(()=>{});
+
+  const toBase64 = file => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
 
   // --- Home Content Handlers ---
   const handleAddEvent = async (e) => {
@@ -75,21 +94,105 @@ const AdminDashboard = () => {
     showToast('Infrastructure added!');
   };
 
-  // --- Timetable Handlers ---
-  const handleSaveTimetable = async (e) => {
+  const handleAddNotice = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    const standard = formData.get('standard');
-    // Simplified: Just saving one major row as an example
-    const schedule = [
-      { time: '08:30 - 12:30', mon: formData.get('mon'), tue: formData.get('tue'), wed: formData.get('wed'), thu: formData.get('thu'), fri: formData.get('fri') }
-    ];
+    await fetch('/api/notices', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: formData.get('title'), content: formData.get('content'), tag: formData.get('tag') })
+    });
+    fetchNotices();
+    e.target.reset();
+    showToast('Notice published!');
+  };
+
+  const handleDeleteUser = async (id) => {
+    if (!confirm('Permanently remove this user?')) return;
+    await fetch(`/api/users/${id}`, { method: 'DELETE' });
+    fetchStats();
+    showToast('User removed');
+  };
+
+  const handleDeleteEvent = async (id) => {
+    await fetch(`/api/events/${id}`, { method: 'DELETE' });
+    fetchEvents();
+    showToast('Event removed');
+  };
+
+  const handleDeleteInfra = async (id) => {
+    await fetch(`/api/infrastructure/${id}`, { method: 'DELETE' });
+    fetchInfra();
+    showToast('Infrastructure removed');
+  };
+
+  const handleDeleteNotice = async (id) => {
+    await fetch(`/api/notices/${id}`, { method: 'DELETE' });
+    fetchNotices();
+    showToast('Notice removed');
+  };
+
+  // --- Fee Config Handlers ---
+  const handleFeeConfigChange = (e) => {
+    const { name, value } = e.target;
+    setCurrentFeeConfig(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleLoadFeeConfig = (standard) => {
+    const config = feeConfigs.find(c => c.standard === standard);
+    if (config) {
+      setCurrentFeeConfig(config);
+    } else {
+      setCurrentFeeConfig({ standard, tuitionFee: 0, examFee: 0, libraryFee: 0, sportsFee: 0 });
+    }
+  };
+
+  const handleSaveFeeConfig = async (e) => {
+    e.preventDefault();
+    await fetch('/api/fee-config', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(currentFeeConfig)
+    });
+    fetchFeeConfigs();
+    showToast(`Fee structure for ${currentFeeConfig.standard} Std saved!`);
+  };
+
+  // --- Timetable Handlers ---
+  const handleTtChange = (index, field, value) => {
+    const newRows = [...ttRows];
+    newRows[index] = { ...newRows[index], [field]: value };
+    setTtRows(newRows);
+  };
+
+  const handleSaveTimetable = async (e) => {
+    e.preventDefault();
+    const standard = ttStandard;
+    if (!standard) { showToast('Please select a class!', 'error'); return; }
+    
+    const schedule = ttRows.map(row => ({
+      time: row.time || '00:00',
+      mon: row.mon || '-', tue: row.tue || '-', wed: row.wed || '-', thu: row.thu || '-', fri: row.fri || '-', sat: row.sat || '-'
+    }));
+
     await fetch('/api/timetables', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ standard, schedule })
     });
     fetchTimetables();
-    showToast(`Timetable for ${standard} Std saved!`);
+    showToast(`Timetable for ${standard} Std updated!`);
+  };
+
+  const handleLoadExistingTt = async (standard) => {
+    setTtStandard(standard);
+    if (!standard) return;
+    try {
+      const res = await fetch(`/api/timetables?standard=${standard}`);
+      const data = await res.json();
+      if (data && data.schedule && data.schedule.length > 0) {
+        setTtRows(data.schedule);
+      } else {
+        setTtRows(Array(8).fill({ time: '', mon: '', tue: '', wed: '', thu: '', fri: '', sat: '' }));
+      }
+    } catch(e) {}
   };
 
   // --- Results Handlers ---
@@ -119,7 +222,7 @@ const AdminDashboard = () => {
         record.date, record.studentName, record.status, record.teacherName
       ]);
 
-      doc.autoTable({
+      autoTable(doc, {
         startY: 36,
         head: [['Date', 'Student Name', 'Status', 'Marked By']],
         body: tableData,
@@ -132,6 +235,30 @@ const AdminDashboard = () => {
     }
   };
 
+  // --- Gallery Handlers ---
+  const handleAddGallery = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const file = e.target.elements.image.files[0];
+    if (!file) return;
+    
+    const base64 = await toBase64(file);
+    await fetch('/api/gallery', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: formData.get('title'), imageBase64: base64 })
+    });
+    fetchGallery();
+    e.target.reset();
+    showToast('Image added to scrolling highlights!');
+  };
+
+  const handleDeleteGallery = async (id) => {
+    if(!confirm('Delete this image?')) return;
+    await fetch(`/api/gallery/${id}`, { method: 'DELETE' });
+    fetchGallery();
+    showToast('Image removed.');
+  };
+
   return (
     <div className="admin-dashboard">
       <div className="page-header">
@@ -140,7 +267,7 @@ const AdminDashboard = () => {
       </div>
 
       <div className="admin-tabs">
-        {['Overview', 'Home Content', 'Timetable', 'Results', 'Reports'].map(tab => (
+        {['Overview', 'Home Content', 'Gallery', 'Timetable', 'Results', 'Fees Setup', 'Reports'].map(tab => (
           <button key={tab} className={`tab-btn ${activeTab === tab ? 'active' : ''}`} onClick={() => setActiveTab(tab)}>
             {tab}
           </button>
@@ -176,15 +303,16 @@ const AdminDashboard = () => {
           <div className="admin-grid">
             <section className="glass-card section-padded">
               <h3>👤 Recent Registrations</h3>
-              <div className="user-list mt-4">
+              <div className="recent-users-list mt-4">
                 {recentUsers.length === 0 && <p className="empty-msg">No recent registrations.</p>}
-                {recentUsers.map((u, i) => (
-                  <div key={u.id} className="user-row">
-                    <div className="user-avatar-sm">{u.name?.charAt(0)?.toUpperCase()}</div>
-                    <div className="user-details">
-                      <strong>{u.name}</strong><span>{u.email}</span>
+                {recentUsers.map(u => (
+                  <div key={u.id} className="user-item-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', borderBottom: '1px solid var(--border)' }}>
+                    <div>
+                      <strong>{u.name}</strong> • <span className="text-muted">{u.role}</span>
                     </div>
-                    <span className={`role-pill ${u.role}`}>{u.role}</span>
+                    {u.role !== 'admin' && (
+                      <button onClick={() => handleDeleteUser(u.id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.8rem' }}>Remove</button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -195,6 +323,7 @@ const AdminDashboard = () => {
 
       {activeTab === 'Home Content' && (
         <div className="tab-pane animate-fade-in admin-grid">
+          {/* Events Management */}
           <section className="glass-card section-padded">
             <h3>📢 Add Highlight/Event</h3>
             <form onSubmit={handleAddEvent} className="mt-4">
@@ -203,23 +332,109 @@ const AdminDashboard = () => {
               <button type="submit" className="btn btn-primary mt-4 w-full">Add Event to Home</button>
             </form>
             <div className="mt-6">
-              <h4>Current Events: {events.length}</h4>
+              <h4>Current Events:</h4>
+              <div className="list-group mt-2">
+                {events.map(ev => (
+                  <div key={ev.id} className="list-item" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', background: 'var(--bg-input)', borderRadius: '8px', marginBottom: '8px' }}>
+                    <span>{ev.title}</span>
+                    <button onClick={() => handleDeleteEvent(ev.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>Delete</button>
+                  </div>
+                ))}
+              </div>
             </div>
           </section>
 
+          {/* Infrastructure Management */}
           <section className="glass-card section-padded">
             <h3>🏗️ Manage Infrastructure / Equipment</h3>
             <form onSubmit={handleAddInfra} className="mt-4">
               <input type="text" name="name" placeholder="Item Name (e.g. Microscopes)" required className="form-input" />
               <input type="number" name="quantity" placeholder="Quantity" required className="form-input mt-4" />
-              <select name="status" className="form-input mt-4">
+              <select name="status" className="form-input mt-4" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-input)', color: 'var(--text-main)', marginBottom: '16px' }}>
                 <option>Available</option>
                 <option>Under Maintenance</option>
               </select>
-              <button type="submit" className="btn btn-secondary mt-4 w-full">Add Infrastructure</button>
+              <button type="submit" className="btn btn-secondary w-full">Add Infrastructure</button>
             </form>
             <div className="mt-6">
-              <h4>Current Items: {infra.length}</h4>
+              <h4>Current Items ({infra.length}):</h4>
+              <div className="list-group mt-2">
+                {infra.map(i => (
+                  <div key={i.id} className="list-item" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', background: 'var(--bg-input)', borderRadius: '8px', marginBottom: '8px' }}>
+                    <span>{i.name} ({i.quantity})</span>
+                    <button onClick={() => handleDeleteInfra(i.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>Delete</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Notices Management */}
+          <section className="glass-card section-padded" style={{ gridColumn: '1 / -1' }}>
+             <h3>📢 Manage Notices / Announcements</h3>
+             <form onSubmit={handleAddNotice} className="mt-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <input type="text" name="title" placeholder="Notice Title" required className="form-input" />
+                <select name="tag" className="form-input">
+                   <option>Event</option>
+                   <option>Academic</option>
+                   <option>Meeting</option>
+                   <option>Holiday</option>
+                </select>
+                <textarea name="content" placeholder="Announcement content..." required className="form-input" style={{ gridColumn: '1 / -1', height: '100px' }}></textarea>
+                <button type="submit" className="btn btn-primary" style={{ gridColumn: '1 / -1' }}>Publish Notice</button>
+             </form>
+             <div className="mt-8">
+                <h4>Recent Notices: ({notices.length})</h4>
+                <div className="mt-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
+                   {notices.map(n => (
+                     <div key={n.id} className="glass-card" style={{ padding: '16px', border: '1px solid var(--border)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                           <span className="badge" style={{ background: 'var(--primary)', color: 'white', fontSize: '0.6rem' }}>{n.tag}</span>
+                           <button onClick={() => handleDeleteNotice(n.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>Delete</button>
+                        </div>
+                        <h5 className="mt-2">{n.title}</h5>
+                        <p className="text-muted" style={{ fontSize: '0.8rem', marginTop: '4px' }}>{n.content}</p>
+                     </div>
+                   ))}
+                </div>
+             </div>
+          </section>
+        </div>
+      )}
+
+      {activeTab === 'Gallery' && (
+        <div className="tab-pane animate-fade-in admin-grid">
+          <section className="glass-card section-padded">
+            <h3>🎬 Upload Scrolling Highlights (Gallery)</h3>
+            <p className="text-muted mb-4">Add images that will appear in the scrolling gallery on the home screen.</p>
+            <form onSubmit={handleAddGallery} className="mt-4">
+              <div className="form-group">
+                <label>Highlight Title</label>
+                <input type="text" name="title" placeholder="e.g. Science Fair 2026" required className="form-input" />
+              </div>
+              <div className="form-group mt-4">
+                <label>Select Image</label>
+                <input type="file" name="image" accept="image/*" required className="form-input" />
+              </div>
+              <button type="submit" className="btn btn-primary mt-6 w-full">Upload to Highlights</button>
+            </form>
+          </section>
+
+          <section className="glass-card section-padded">
+            <h3>🖼️ Current Highlights ({gallery.length})</h3>
+            <div className="gallery-admin-list mt-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '12px' }}>
+              {gallery.map(img => (
+                <div key={img.id} className="gallery-admin-item" style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)' }}>
+                  <img src={img.imageBase64} alt={img.title} style={{ width: '100%', height: '100px', objectFit: 'cover' }} />
+                  <button 
+                    onClick={() => handleDeleteGallery(img.id)}
+                    style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', borderRadius: '4px', padding: '2px 6px', fontSize: '0.7rem', cursor: 'pointer' }}
+                  >
+                    Delete
+                  </button>
+                  <div style={{ fontSize: '0.65rem', padding: '4px', color: 'var(--text-muted)', textAlign: 'center' }}>{img.title}</div>
+                </div>
+              ))}
             </div>
           </section>
         </div>
@@ -229,19 +444,84 @@ const AdminDashboard = () => {
         <div className="tab-pane animate-fade-in glass-card section-padded">
           <h3>📅 Manage Class Timetables</h3>
           <form onSubmit={handleSaveTimetable} className="mt-6">
-            <select name="standard" className="form-input mb-4" required>
-              <option value="">Select Class Standard...</option>
-              {STANDARDS.map(s => <option key={s} value={s}>{s} Standard</option>)}
-            </select>
-            <div className="timetable-grid">
-              <div><label>Monday</label><input type="text" name="mon" className="form-input" placeholder="Subject" /></div>
-              <div><label>Tuesday</label><input type="text" name="tue" className="form-input" placeholder="Subject" /></div>
-              <div><label>Wednesday</label><input type="text" name="wed" className="form-input" placeholder="Subject" /></div>
-              <div><label>Thursday</label><input type="text" name="thu" className="form-input" placeholder="Subject" /></div>
-              <div><label>Friday</label><input type="text" name="fri" className="form-input" placeholder="Subject" /></div>
+            <div className="form-group mb-6">
+              <label>Target Class (Load to Update)</label>
+              <select 
+                className="form-input" 
+                required 
+                style={{ maxWidth: '300px' }}
+                value={ttStandard}
+                onChange={(e) => handleLoadExistingTt(e.target.value)}
+              >
+                <option value="">Select Class Standard...</option>
+                {STANDARDS.map(s => <option key={s} value={s}>{s} Standard</option>)}
+              </select>
             </div>
-            <button type="submit" className="btn btn-primary mt-6">Save Class Timetable</button>
+            
+            <div className="timetable-builder-simple" style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+              {ttRows.map((row, idx) => (
+                <div key={idx} className="period-block" style={{ padding: '20px', background: 'var(--bg-input)', borderRadius: '16px', border: '1px solid var(--border)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                    <span style={{ fontWeight: 800, color: 'var(--primary)', fontSize: '0.9rem' }}>LECTURE {idx + 1}</span>
+                    <input type="text" className="form-input" placeholder="Time Slot (e.g. 08:30 - 09:15)" value={row.time} onChange={e => handleTtChange(idx, 'time', e.target.value)} required style={{ maxWidth: '200px' }} />
+                  </div>
+                  <div className="timetable-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
+                    <div><label style={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.6 }}>MONDAY</label><input type="text" className="form-input" placeholder="Subject" value={row.mon} onChange={e => handleTtChange(idx, 'mon', e.target.value)} /></div>
+                    <div><label style={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.6 }}>TUESDAY</label><input type="text" className="form-input" placeholder="Subject" value={row.tue} onChange={e => handleTtChange(idx, 'tue', e.target.value)} /></div>
+                    <div><label style={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.6 }}>WEDNESDAY</label><input type="text" className="form-input" placeholder="Subject" value={row.wed} onChange={e => handleTtChange(idx, 'wed', e.target.value)} /></div>
+                    <div><label style={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.6 }}>THURSDAY</label><input type="text" className="form-input" placeholder="Subject" value={row.thu} onChange={e => handleTtChange(idx, 'thu', e.target.value)} /></div>
+                    <div><label style={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.6 }}>FRIDAY</label><input type="text" className="form-input" placeholder="Subject" value={row.fri} onChange={e => handleTtChange(idx, 'fri', e.target.value)} /></div>
+                    <div><label style={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.6 }}>SATURDAY</label><input type="text" className="form-input" placeholder="Subject" value={row.sat} onChange={e => handleTtChange(idx, 'sat', e.target.value)} /></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button type="submit" className="btn btn-primary mt-8 btn-lg" style={{ padding: '14px 40px' }}>Save 8-Lecture Timetable</button>
           </form>
+        </div>
+      )}
+
+      {activeTab === 'Fees Setup' && (
+        <div className="tab-pane animate-fade-in admin-grid">
+           <section className="glass-card section-padded">
+              <h3>💳 Class-wise Fee Settings</h3>
+              <p className="text-muted mb-6">Set the annual fee structure for each class. Students will see these values in their dashboard.</p>
+              <form onSubmit={handleSaveFeeConfig} className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                 <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                    <label>Select Standard</label>
+                    <select name="standard" className="form-input" required value={currentFeeConfig.standard} onChange={(e) => handleLoadFeeConfig(e.target.value)}>
+                       <option value="">Choose Class...</option>
+                       {STANDARDS.map(s => <option key={s} value={s}>{s} Standard</option>)}
+                    </select>
+                 </div>
+                 <div className="form-group">
+                    <label>Tuition Fee (₹)</label>
+                    <input type="number" name="tuitionFee" value={currentFeeConfig.tuitionFee} onChange={handleFeeConfigChange} required className="form-input" />
+                 </div>
+                 <div className="form-group">
+                    <label>Exam Fee (₹)</label>
+                    <input type="number" name="examFee" value={currentFeeConfig.examFee} onChange={handleFeeConfigChange} required className="form-input" />
+                 </div>
+                 <div className="form-group">
+                    <label>Library Fee (₹)</label>
+                    <input type="number" name="libraryFee" value={currentFeeConfig.libraryFee} onChange={handleFeeConfigChange} required className="form-input" />
+                 </div>
+                 <div className="form-group">
+                    <label>Sports & Activity Fee (₹)</label>
+                    <input type="number" name="sportsFee" value={currentFeeConfig.sportsFee} onChange={handleFeeConfigChange} required className="form-input" />
+                 </div>
+                 <div className="glass-card p-6" style={{ gridColumn: '1 / -1', background: 'var(--bg-input)', textAlign: 'right' }}>
+                    <span style={{ fontSize: '1.2rem', fontWeight: 800 }}>Total Annual Fee: <span className="text-primary">₹{
+                      (parseFloat(currentFeeConfig.tuitionFee)||0) + 
+                      (parseFloat(currentFeeConfig.examFee)||0) + 
+                      (parseFloat(currentFeeConfig.libraryFee)||0) + 
+                      (parseFloat(currentFeeConfig.sportsFee)||0)
+                    }</span></span>
+                 </div>
+                 <button type="submit" className="btn btn-primary" style={{ gridColumn: '1 / -1' }}>Save Fee Structure</button>
+              </form>
+           </section>
         </div>
       )}
 

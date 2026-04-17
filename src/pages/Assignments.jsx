@@ -15,6 +15,8 @@ const Assignments = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showSubmitModal, setShowSubmitModal] = useState(null);
   const [toast, setToast] = useState(null);
+  const [previewPdf, setPreviewPdf] = useState(null);
+  const [previewName, setPreviewName] = useState('');
 
   // Create form
   const [newTitle, setNewTitle] = useState('');
@@ -44,8 +46,11 @@ const Assignments = () => {
   const fetchAssignments = async () => {
     try {
       let url = '/api/assignments';
-      if (isStudent && user?.standard) url += `?standard=${user.standard}`;
       if (isTeacher) url += `?teacherId=${user.id}`;
+      // Restricted assignments to student's standard only
+      if (isStudent && user.standard) {
+        url += `?standard=${user.standard}`;
+      }
       const res = await fetch(url);
       const data = await res.json();
       setAssignments(data.reverse());
@@ -187,9 +192,13 @@ const Assignments = () => {
                 <p className="asm-description">{asm.description}</p>
               )}
               {asm.fileBase64 && (
-                <a href={asm.fileBase64} download={asm.fileName} className="btn btn-secondary btn-sm mb-4" style={{display: 'inline-flex'}}>
-                  <FileText size={14}/> Download Question PDF
-                </a>
+                <button 
+                  onClick={() => { setPreviewPdf(asm.fileBase64); setPreviewName(asm.fileName); }} 
+                  className="btn btn-secondary btn-sm mb-4" 
+                  style={{display: 'inline-flex'}}
+                >
+                  <FileText size={14} className="mr-2"/> View Attached PDF
+                </button>
               )}
 
               <div className="asm-footer">
@@ -232,7 +241,13 @@ const Assignments = () => {
                         <span className="sub-date">{new Date(sub.submittedAt).toLocaleString('en-IN')}</span>
                       </div>
                       {sub.fileBase64 && (
-                        <a href={sub.fileBase64} download={sub.fileName} className="badge badge-success" style={{alignSelf:'center', color:'white', background:'#10b981', padding:'4px 8px', borderRadius:'4px'}}>PDF</a>
+                        <button 
+                          onClick={() => { setPreviewPdf(sub.fileBase64); setPreviewName(sub.fileName); }} 
+                          className="badge badge-success" 
+                          style={{alignSelf:'center', color:'white', background:'#10b981', padding:'6px 12px', borderRadius:'4px', cursor:'pointer'}}
+                        >
+                          View PDF
+                        </button>
                       )}
                     </div>
                   ))}
@@ -339,6 +354,30 @@ const Assignments = () => {
                 <Upload size={16}/> Submit Now
               </button>
             </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Preview PDF Modal */}
+      <AnimatePresence>
+        {previewPdf && (
+          <div className="modal-overlay" onClick={() => setPreviewPdf(null)} style={{ zIndex: 1000, padding: '20px' }}>
+             <motion.div 
+               className="modal-content" 
+               onClick={e => e.stopPropagation()} 
+               initial={{ opacity: 0, scale: 0.95 }}
+               animate={{ opacity: 1, scale: 1 }}
+               exit={{ opacity: 0, scale: 0.95 }}
+               style={{ width: '100%', height: '100%', maxWidth: '1200px', display: 'flex', flexDirection: 'column', padding: '16px' }}
+             >
+                <div className="modal-header" style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between' }}>
+                   <h3 style={{ margin: 0, fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                     <FileText size={20} className="text-primary"/> {previewName}
+                   </h3>
+                   <button className="close-btn" onClick={() => setPreviewPdf(null)}><X size={24}/></button>
+                </div>
+                <iframe src={previewPdf} style={{ flex: 1, width: '100%', border: '1px solid var(--border)', borderRadius: '8px', background: '#f8fafc' }} title="PDF Preview" />
+             </motion.div>
           </div>
         )}
       </AnimatePresence>

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Award, FileText, Download, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 const SUBJECTS = ['Mathematics', 'Science', 'English', 'History', 'Geography', 'Computer Science'];
 
@@ -83,7 +83,7 @@ const Results = () => {
       r.subject, r.internal, r.theory, r.total, r.grade
     ]);
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: 45,
       head: [['Subject', 'Internal (20)', 'Theory (80)', 'Total (100)', 'Grade']],
       body: tableData,
@@ -126,7 +126,7 @@ const Results = () => {
               </select>
             </div>
 
-            <div className="grid-2 mt-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="grid-adaptive mt-4">
               <div className="form-group">
                 <label>Internal Marks (Max 20)</label>
                 <input type="number" name="internal" className="form-input" max="20" min="0" required />
@@ -168,7 +168,7 @@ const Results = () => {
         </div>
       ) : (
         <>
-          <div className="stats-grid mt-8" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
+          <div className="grid-adaptive mt-8">
             <div className="stat-card glass-card" style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
               <div className="stat-icon" style={{ width: '50px', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#d1fae5', color: '#065f46', borderRadius: '12px' }}><Award /></div>
               <div className="stat-content">
@@ -182,8 +182,8 @@ const Results = () => {
             </button>
           </div>
 
-          <div className="glass-card mt-8" style={{ overflow: 'hidden' }}>
-            <table className="dashboard-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div className="glass-card mt-8 table-responsive">
+            <table className="dashboard-table" style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
                   <th style={{ padding: '16px', textAlign: 'left', borderBottom: '2px solid var(--border)' }}>Subject</th>

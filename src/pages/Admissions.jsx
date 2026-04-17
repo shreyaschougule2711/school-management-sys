@@ -1,22 +1,67 @@
 import { motion } from 'framer-motion';
-import { Download, Calendar, CheckCircle } from 'lucide-react';
+import { Download, Calendar, CheckCircle, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const Admissions = () => {
   const steps = [
-    { title: 'Inquiry', desc: 'Fill out the online inquiry form or visit the campus.' },
-    { title: 'Assessment', desc: 'Entrance test for Class 5-10 students followed by an interview.' },
-    { title: 'Documents', desc: 'Submit birth certificate, previous school records, and photos.' },
-    { title: 'Fee Payment', desc: 'Secure the seat by paying the admission and first term fees.' },
+    { title: 'Inquiry', desc: 'Fill out the online inquiry form or visit the Dundage campus.' },
+    { title: 'Documents', desc: 'Submit all the required documents (LC, Photo, Aadhar, etc.) as per school norms.' },
+    { title: 'Registration', desc: 'Complete registration. Please note: No admission fee is required.' },
   ];
+
+  const downloadProspectus = () => {
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFillColor(67, 56, 202); // Primary color
+    doc.rect(0, 0, 210, 40, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(22);
+    doc.text('PARISHRAM VIDYALAY DUNDAGE', 105, 20, { align: 'center' });
+    doc.setFontSize(14);
+    doc.text('School Admission Prospectus 2026-27', 105, 30, { align: 'center' });
+
+    // Body
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(16);
+    doc.text('Welcome to Parishram Vidyalay', 20, 55);
+    doc.setFontSize(11);
+    const splitText = doc.splitTextToSize('Our institution provides high-quality Marathi medium education for rural students in the Gadhinglaj region. We focus on holistic development, academic rigor, and character building.', 170);
+    doc.text(splitText, 20, 65);
+
+    doc.setFontSize(14);
+    doc.text('Admission Process', 20, 85);
+    autoTable(doc, {
+      startY: 90,
+      head: [['Step', 'Description']],
+      body: [
+        ['1. Inquiry', 'Submit online form or visit campus'],
+        ['2. Documentation', 'Submit all the required documents'],
+        ['3. Registration', 'Final seat allotment (Zero Admission Fee)']
+      ],
+      theme: 'grid'
+    });
+
+    doc.setFontSize(14);
+    doc.text('Eligibility Criteria', 20, 140);
+    doc.setFontSize(11);
+    doc.text('1. Students must be in between 5th standard to 10th standard.', 20, 150);
+
+    doc.setFontSize(14);
+    doc.text('Contact Information', 20, 165);
+
+    doc.save('Admission_Prospectus_Parishram_Vidyalay.pdf');
+  };
 
   return (
     <div className="admissions-page section-padding">
       <div className="container">
         <div className="section-header">
-          <span className="badge">Joining Zenith</span>
-          <h1>Admission <span className="gradient-text">Process</span></h1>
-          <p>We welcome applications from students who are eager to learn and grow in a dynamic environment.</p>
+          <span className="badge">Admission Open 2026-27</span>
+          <h1>Start Your <span className="gradient-text">Journey</span></h1>
+          <p>Join a community dedicated to academic rigor and rural excellence. No hidden fees, no entrance exams.</p>
         </div>
 
         <div className="steps-grid">
@@ -40,9 +85,7 @@ const Admissions = () => {
             <div className="info-block">
               <h3>Eligibility Criteria</h3>
               <ul>
-                <li><CheckCircle size={16} /> Minimum age: 10 years for Class 5</li>
-                <li><CheckCircle size={16} /> Previous academic records consistent above 60%</li>
-                <li><CheckCircle size={16} /> Proficiency in English and Mathematics</li>
+                <li><CheckCircle size={16} /> Students must be in between 5th standard to 10th standard.</li>
               </ul>
             </div>
             <div className="info-block">
@@ -53,7 +96,7 @@ const Admissions = () => {
               </div>
               <div className="date-item">
                 <Calendar size={18} />
-                <span>Entrance Exam: <strong>June 15th, 2026</strong></span>
+                <span>Starting Date: <strong>June 15th, 2026</strong></span>
               </div>
             </div>
           </div>
@@ -63,9 +106,9 @@ const Admissions = () => {
             <div className="flex gap-4" style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
               <button 
                 className="btn btn-secondary"
-                onClick={() => alert('Starting download: Zenith_Prospectus_2026.pdf')}
+                onClick={downloadProspectus}
               >
-                <Download size={18}/> Prospectus.pdf
+                <FileText size={18}/> Download Prospectus
               </button>
               <Link to="/register" className="btn btn-primary">Apply Online Now</Link>
             </div>

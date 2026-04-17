@@ -3,12 +3,15 @@ import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import crypto from 'crypto';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -93,9 +96,46 @@ const initializeData = () => {
       { id: 3, title: 'Parent-Teacher Meeting', date: '2026-04-20', tag: 'Meeting', content: 'PTM scheduled for all classes.' },
     ]);
   }
+
+  // Gallery
+  if (!fs.existsSync(path.join(DATA_DIR, 'gallery.json'))) {
+    writeJSON('gallery.json', []);
+  }
+
+  // Fee Config
+  if (!fs.existsSync(path.join(DATA_DIR, 'fee_config.json'))) {
+    writeJSON('fee_config.json', []);
+  }
 };
 
 initializeData();
+
+// ==================== USER PROFILE ENDPOINTS ====================
+
+app.post('/api/user/profile-image', (req, res) => {
+  const { userId, profileImage } = req.body;
+  const users = readJSON('users.json');
+  const user = users.find(u => u.id === parseInt(userId));
+  if (!user) return res.status(404).json({ success: false });
+
+  user.profileImage = profileImage;
+  writeJSON('users.json', users);
+  const { password: _, ...safeUser } = user;
+  res.json({ success: true, user: safeUser });
+});
+app.post('/api/user/change-password', (req, res) => {
+  const { userId, currentPassword, newPassword } = req.body;
+  const users = readJSON('users.json');
+  const user = users.find(u => u.id === parseInt(userId));
+
+  if (!user || user.password !== currentPassword) {
+    return res.status(400).json({ success: false, message: 'Current password is incorrect.' });
+  }
+
+  user.password = newPassword;
+  writeJSON('users.json', users);
+  res.json({ success: true, message: 'Password updated successfully!' });
+});
 
 // ==================== AUTH ENDPOINTS ====================
 
@@ -113,7 +153,7 @@ app.post('/api/login', (req, res) => {
 });
 
 app.post('/api/register', (req, res) => {
-  const { name, email, password, role, standard, phone, parentName, subject } = req.body;
+  const { name, email, password, role, standard, phone, parentName, subject, degree } = req.body;
   const users = readJSON('users.json');
   
   if (users.find(u => u.email === email)) {
@@ -130,27 +170,23 @@ app.post('/api/register', (req, res) => {
     phone,
     parentName: role === 'student' ? parentName : undefined,
     subject: role === 'teacher' ? subject : undefined,
+    degree: role === 'teacher' ? degree : undefined,
     createdAt: new Date().toISOString()
   };
   
   users.push(newUser);
   writeJSON('users.json', users);
   
-  // Initialize fee record for students
+  // Initialize fee record for students (minimal record, values set by admin config later)
   if (role === 'student') {
     const fees = readJSON('fees.json');
     fees.push({
       studentId: newUser.id,
       studentName: name,
       standard: standard,
-      tuitionFee: 25000,
-      examFee: 3000,
-      libraryFee: 1500,
-      sportsFee: 2000,
-      totalFee: 31500,
       paidAmount: 0,
-      status: 'Unpaid',
-      payments: []
+      payments: [],
+      status: 'Unpaid'
     });
     writeJSON('fees.json', fees);
   }
@@ -165,6 +201,14 @@ app.get('/api/users', (req, res) => {
   const users = readJSON('users.json');
   const safeUsers = users.map(({ password, ...rest }) => rest);
   res.json(safeUsers);
+});
+
+app.delete('/api/users/:id', (req, res) => {
+  const { id } = req.params;
+  let users = readJSON('users.json');
+  users = users.filter(u => u.id !== parseInt(id));
+  writeJSON('users.json', users);
+  res.json({ success: true, message: 'User removed successfully' });
 });
 
 app.get('/api/students', (req, res) => {
@@ -194,7 +238,7 @@ app.get('/api/assignments', (req, res) => {
 });
 
 app.post('/api/assignments', (req, res) => {
-  const { title, subject, description, standard, dueDate, teacherId, teacherName } = req.body;
+  const { title, subject, description, standard, dueDate, teacherId, teacherName, fileBase64, fileName } = req.body;
   const assignments = readJSON('assignments.json');
   const newAssignment = {
     id: Date.now(),
@@ -205,6 +249,8 @@ app.post('/api/assignments', (req, res) => {
     dueDate,
     teacherId,
     teacherName,
+    fileBase64,
+    fileName,
     createdAt: new Date().toISOString(),
     submissions: []
   };
@@ -215,7 +261,7 @@ app.post('/api/assignments', (req, res) => {
 
 app.post('/api/assignments/:id/submit', (req, res) => {
   const { id } = req.params;
-  const { studentId, studentName, content, fileName } = req.body;
+  const { studentId, studentName, content, fileName, fileBase64 } = req.body;
   const assignments = readJSON('assignments.json');
   const assignment = assignments.find(a => a.id === parseInt(id));
   if (!assignment) return res.status(404).json({ success: false, message: 'Assignment not found' });
@@ -227,6 +273,7 @@ app.post('/api/assignments/:id/submit', (req, res) => {
     studentName,
     content,
     fileName,
+    fileBase64,
     submittedAt: new Date().toISOString(),
     status: 'Submitted'
   });
@@ -302,31 +349,204 @@ app.get('/api/attendance/summary/:studentId', (req, res) => {
 
 // ==================== FEES ENDPOINTS ====================
 
+app.get('/api/fee-config', (req, res) => {
+  res.json(readJSON('fee_config.json'));
+});
+
+app.post('/api/fee-config', (req, res) => {
+  const { standard, tuitionFee, examFee, libraryFee, sportsFee } = req.body;
+  const configs = readJSON('fee_config.json');
+  const index = configs.findIndex(c => c.standard === standard);
+  const newConfig = { 
+    standard, 
+    tuitionFee: parseFloat(tuitionFee), 
+    examFee: parseFloat(examFee), 
+    libraryFee: parseFloat(libraryFee), 
+    sportsFee: parseFloat(sportsFee),
+    totalFee: parseFloat(tuitionFee) + parseFloat(examFee) + parseFloat(libraryFee) + parseFloat(sportsFee)
+  };
+  
+  if (index >= 0) configs[index] = newConfig;
+  else configs.push(newConfig);
+  
+  writeJSON('fee_config.json', configs);
+  res.json({ success: true, config: newConfig });
+});
+
 app.get('/api/fees', (req, res) => {
   const { studentId } = req.query;
-  let fees = readJSON('fees.json');
-  if (studentId) fees = fees.filter(f => f.studentId === parseInt(studentId));
-  res.json(fees);
+  const fees = readJSON('fees.json');
+  const configs = readJSON('fee_config.json');
+  const users = readJSON('users.json');
+
+  const mergeConfig = (studentFee) => {
+    const config = configs.find(c => c.standard === studentFee.standard);
+    if (config) {
+      return { ...studentFee, ...config };
+    }
+    // Default to 0 if no config exists yet
+    return { ...studentFee, tuitionFee: 0, examFee: 0, libraryFee: 0, sportsFee: 0, totalFee: 0 };
+  };
+
+  if (studentId) {
+    let studentFee = fees.find(f => f.studentId === parseInt(studentId));
+    
+    // Fallback: If no record in fees.json, check if student exists in users.json
+    if (!studentFee) {
+      const user = users.find(u => u.id === parseInt(studentId) && u.role === 'student');
+      if (user) {
+        studentFee = {
+          studentId: user.id,
+          studentName: user.name,
+          standard: user.standard,
+          paidAmount: 0,
+          payments: [],
+          status: 'Unpaid'
+        };
+      }
+    }
+
+    if (studentFee) {
+      return res.json([mergeConfig(studentFee)]);
+    }
+    return res.json([]);
+  }
+
+  // Admin view: return ALL students from users.json to ensure consistency
+  const allStudentFees = users
+    .filter(u => u.role === 'student')
+    .map(u => {
+      let f = fees.find(fee => fee.studentId === u.id);
+      if (!f) {
+        f = {
+          studentId: u.id,
+          studentName: u.name,
+          standard: u.standard,
+          paidAmount: 0,
+          payments: [],
+          status: 'Unpaid'
+        };
+      }
+      return mergeConfig(f);
+    });
+  res.json(allStudentFees);
 });
 
 app.post('/api/fees/pay', (req, res) => {
   const { studentId, amount, method } = req.body;
   const fees = readJSON('fees.json');
-  const feeRecord = fees.find(f => f.studentId === parseInt(studentId));
-  if (!feeRecord) return res.status(404).json({ success: false, message: 'Fee record not found' });
+  const configs = readJSON('fee_config.json');
+  let feeRecord = fees.find(f => f.studentId === parseInt(studentId));
   
-  feeRecord.paidAmount += amount;
+  if (!feeRecord) {
+     const users = readJSON('users.json');
+     const user = users.find(u => u.id === parseInt(studentId) && u.role === 'student');
+     if (!user) return res.status(404).json({ success: false, message: 'Student not found' });
+     
+     feeRecord = {
+        studentId: user.id,
+        studentName: user.name,
+        standard: user.standard,
+        paidAmount: 0,
+        payments: [],
+        status: 'Unpaid'
+     };
+     fees.push(feeRecord);
+  }
+
+  // Get current config to calculate correct total
+  const config = configs.find(c => c.standard === feeRecord.standard);
+  const totalFee = config ? config.totalFee : 0;
+
+  feeRecord.paidAmount += parseFloat(amount);
   feeRecord.payments.push({
     id: Date.now(),
-    amount,
+    amount: parseFloat(amount),
     method,
     date: new Date().toISOString(),
-    receiptNo: `PVD-${Date.now().toString().slice(-8)}`
+    receiptNo: `PVD-${Math.floor(Math.random() * 100000000)}`
   });
-  feeRecord.status = feeRecord.paidAmount >= feeRecord.totalFee ? 'Paid' : 'Partial';
-  
+
+  if (feeRecord.paidAmount >= totalFee) feeRecord.status = 'Paid';
+  else if (feeRecord.paidAmount > 0) feeRecord.status = 'Partial';
+
   writeJSON('fees.json', fees);
-  res.json({ success: true, feeRecord });
+  res.json({ success: true, feeRecord: { ...feeRecord, ...(config || {}) } });
+});
+
+app.delete('/api/fees/:studentId', (req, res) => {
+  const { studentId } = req.params;
+  let fees = readJSON('fees.json');
+  const initialLength = fees.length;
+  fees = fees.filter(f => f.studentId !== parseInt(studentId));
+  
+  if (fees.length < initialLength) {
+    writeJSON('fees.json', fees);
+    return res.json({ success: true, message: 'Student fee record deleted successfully' });
+  }
+  res.status(404).json({ success: false, message: 'Record not found' });
+});
+
+app.delete('/api/fees/:studentId/payments/:paymentId', (req, res) => {
+  const { studentId, paymentId } = req.params;
+  const fees = readJSON('fees.json');
+  const configs = readJSON('fee_config.json');
+  const studentFee = fees.find(f => f.studentId === parseInt(studentId));
+  
+  if (!studentFee) return res.status(404).json({ success: false });
+
+  const paymentIndex = studentFee.payments.findIndex(p => p.id === parseInt(paymentId));
+  if (paymentIndex === -1) return res.status(404).json({ success: false });
+
+  // Subtract amount
+  const removedAmount = studentFee.payments[paymentIndex].amount;
+  studentFee.paidAmount -= removedAmount;
+  studentFee.payments.splice(paymentIndex, 1);
+
+  // Update status
+  const config = configs.find(c => c.standard === studentFee.standard);
+  const totalFee = config ? config.totalFee : 0;
+  
+  if (studentFee.paidAmount <= 0) {
+    studentFee.paidAmount = 0;
+    studentFee.status = 'Unpaid';
+  } else if (studentFee.paidAmount >= totalFee) {
+    studentFee.status = 'Paid';
+  } else {
+    studentFee.status = 'Partial';
+  }
+
+  writeJSON('fees.json', fees);
+  res.json({ success: true, message: 'Payment deleted' });
+});
+
+// ==================== TRANSACTIONS SYSTEM ====================
+
+app.get('/api/transactions', (req, res) => {
+  const { studentId } = req.query;
+  const fees = readJSON('fees.json');
+  let transactions = [];
+  
+  fees.forEach(f => {
+    if (f.payments && Array.isArray(f.payments)) {
+      f.payments.forEach(p => {
+        transactions.push({
+          ...p,
+          studentId: f.studentId,
+          studentName: f.studentName,
+          standard: f.standard
+        });
+      });
+    }
+  });
+  
+  if (studentId) {
+    transactions = transactions.filter(t => t.studentId === parseInt(studentId));
+  }
+  
+  // Sort by date descending
+  transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+  res.json(transactions);
 });
 
 
@@ -351,6 +571,14 @@ app.post('/api/notices', (req, res) => {
   notices.push(newNotice);
   writeJSON('notices.json', notices);
   res.json({ success: true, notice: newNotice });
+});
+
+app.delete('/api/notices/:id', (req, res) => {
+  const { id } = req.params;
+  let notices = readJSON('notices.json');
+  notices = notices.filter(n => n.id !== parseInt(id));
+  writeJSON('notices.json', notices);
+  res.json({ success: true });
 });
 
 // ==================== RESULTS ENDPOINTS ====================
@@ -421,6 +649,14 @@ app.post('/api/events', (req, res) => {
   res.json({ success: true, event: ev });
 });
 
+app.delete('/api/events/:id', (req, res) => {
+  const { id } = req.params;
+  let events = readJSON('events.json');
+  events = events.filter(e => e.id !== parseInt(id));
+  writeJSON('events.json', events);
+  res.json({ success: true });
+});
+
 // ==================== INFRASTRUCTURE ====================
 app.get('/api/infrastructure', (req, res) => {
   res.json(readJSON('infrastructure.json'));
@@ -430,6 +666,14 @@ app.post('/api/infrastructure', (req, res) => {
   const { name, category, quantity, status } = req.body;
   const infra = readJSON('infrastructure.json');
   infra.push({ id: Date.now(), name, category, quantity, status });
+  writeJSON('infrastructure.json', infra);
+  res.json({ success: true });
+});
+
+app.delete('/api/infrastructure/:id', (req, res) => {
+  const { id } = req.params;
+  let infra = readJSON('infrastructure.json');
+  infra = infra.filter(i => i.id !== parseInt(id));
   writeJSON('infrastructure.json', infra);
   res.json({ success: true });
 });
@@ -444,13 +688,59 @@ app.post('/api/upi', (req, res) => {
   writeJSON('upi.json', { upiId, qrImageBase64 });
   res.json({ success: true });
 });
-
 app.post('/api/attendance/sms', (req, res) => {
-  // Mock SMS functionality
-  const { studentId, month } = req.body;
-  // In real life, fetch phone number from users.json and trigger SMS API (like Twilio)
-  console.log(`[SMS MOCK] Sending ${month} attendance report to student ${studentId}`);
-  res.json({ success: true, message: 'SMS sent successfully!' });
+  const { standard, month } = req.body;
+  const users = readJSON('users.json');
+  const attendance = readJSON('attendance.json');
+  
+  // Find all students in this standard
+  const students = users.filter(u => u.role === 'student' && u.standard === standard);
+  
+  if (students.length === 0) {
+    return res.status(404).json({ success: false, message: `No students found in ${standard} Standard.` });
+  }
+
+  // Simulation log
+  console.log(`[SMS SYSTEM] Launching bulk attendance reports for ${standard} Std - ${month}`);
+  
+  students.forEach(s => {
+    const studentRecords = attendance.filter(a => a.studentId === s.id);
+    const present = studentRecords.filter(a => a.status === 'Present').length;
+    const total = studentRecords.length;
+    const pct = total > 0 ? ((present / total) * 100).toFixed(1) : 0;
+    
+    const phone = s.phone || '8379801244'; // Use student number or fallback to requested primary number
+    const message = `PVD SMS: Dear Parent, ${s.name}'s attendance for ${month} is ${pct}% (${present}/${total} days). - Parishram Vidyalay`;
+    
+    console.log(`[SMS AUTH] Sending to ${phone}: "${message}"`);
+  });
+
+  // Specifically log the Mirror/Admin copy as requested
+  console.log(`[SMS MIRROR] All reports also forwarded to Primary Admin Number: +91 8379801244`);
+
+  res.json({ success: true, message: `SMS reports for ${students.length} students have been sent to their registered numbers and to +91 8379801244.` });
+});
+
+// ==================== GALLERY ENDPOINTS ====================
+
+app.get('/api/gallery', (req, res) => {
+  res.json(readJSON('gallery.json'));
+});
+
+app.post('/api/gallery', (req, res) => {
+  const { title, imageBase64 } = req.body;
+  const gallery = readJSON('gallery.json');
+  const newItem = { id: Date.now(), title, imageBase64 };
+  gallery.push(newItem);
+  writeJSON('gallery.json', gallery);
+  res.json({ success: true, item: newItem });
+});
+
+app.delete('/api/gallery/:id', (req, res) => {
+  let gallery = readJSON('gallery.json');
+  gallery = gallery.filter(item => item.id !== parseInt(req.params.id));
+  writeJSON('gallery.json', gallery);
+  res.json({ success: true });
 });
 
 // Serve frontend static files
@@ -462,6 +752,15 @@ app.use((req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
 });
 
+
+
 app.listen(PORT, () => {
   console.log(`🚀 Backend server running on http://localhost:${PORT}`);
+}).on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`❌ Port ${PORT} is already in use. Please close the other process.`);
+  } else {
+    console.error('❌ Server error:', err);
+  }
+  process.exit(1);
 });

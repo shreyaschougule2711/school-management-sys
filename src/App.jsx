@@ -14,6 +14,7 @@ import Assignments from './pages/Assignments';
 import Attendance from './pages/Attendance';
 import Results from './pages/Results';
 import Fees from './pages/Fees';
+import Transactions from './pages/Transactions';
 import Settings from './pages/Settings';
 
 function App() {
@@ -39,6 +40,7 @@ function App() {
           <Route path="attendance" element={<Attendance />} />
           <Route path="results" element={<Results />} />
           <Route path="fees" element={<Fees />} />
+          <Route path="transactions" element={<Transactions />} />
           <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>

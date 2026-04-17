@@ -6,21 +6,24 @@ import {
   CheckSquare, 
   ClipboardCheck, 
   IndianRupee, 
+  Receipt,
   LogOut,
   Settings,
   Bell,
   Sun,
   Moon,
   Search,
-  ChevronRight
+  ChevronRight,
+  Menu,
+  X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
-const SidebarItem = ({ icon, label, path, active }) => (
-  <Link to={path}>
+const SidebarItem = ({ icon, label, path, active, onClick }) => (
+  <Link to={path} onClick={onClick}>
     <div className={`sidebar-item ${active ? 'active' : ''}`}>
       {icon}
       <span>{label}</span>
@@ -34,6 +37,7 @@ const DashboardLayout = () => {
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   const role = user?.role || location.pathname.split('/')[2] || 'student';
 
@@ -56,17 +60,20 @@ const DashboardLayout = () => {
       { icon: <ClipboardCheck size={20}/>, label: 'Attendance', path: '/dashboard/attendance' },
       { icon: <CheckSquare size={20}/>, label: 'Exams & Results', path: '/dashboard/results' },
       { icon: <IndianRupee size={20}/>, label: 'Fees', path: '/dashboard/fees' },
+      { icon: <Receipt size={20}/>, label: 'Transactions', path: '/dashboard/transactions' },
     ],
     teacher: [
       { icon: <LayoutDashboard size={20}/>, label: 'Teacher Panel', path: '/dashboard/teacher' },
       { icon: <ClipboardCheck size={20}/>, label: 'Mark Attendance', path: '/dashboard/attendance' },
       { icon: <BookText size={20}/>, label: 'Post Assignments', path: '/dashboard/assignments' },
+      { icon: <CheckSquare size={20}/>, label: 'Add Marks', path: '/dashboard/results' },
     ],
     admin: [
       { icon: <LayoutDashboard size={20}/>, label: 'Admin Panel', path: '/dashboard/admin' },
       { icon: <ClipboardCheck size={20}/>, label: 'Attendance', path: '/dashboard/attendance' },
       { icon: <BookText size={20}/>, label: 'Assignments', path: '/dashboard/assignments' },
       { icon: <IndianRupee size={20}/>, label: 'Fees', path: '/dashboard/fees' },
+      { icon: <Receipt size={20}/>, label: 'Transactions', path: '/dashboard/transactions' },
     ]
   };
 
@@ -74,14 +81,29 @@ const DashboardLayout = () => {
 
   return (
     <div className="dashboard-container">
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="sidebar-overlay" 
+            onClick={() => setIsSidebarOpen(false)} 
+          />
+        )}
+      </AnimatePresence>
+
       {/* Sidebar */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
-          <div className="logo-sm">प</div>
+          <img src="/assets/logo.png" alt="Logo" className="logo-img-sm" />
           <div className="sidebar-title">
             <h2>Parishram Vidyalay</h2>
             <span className="subtitle">Dundage</span>
           </div>
+          <button className="mobile-close-btn" onClick={() => setIsSidebarOpen(false)}>
+            <X size={20} />
+          </button>
         </div>
         
         <nav className="sidebar-nav">
@@ -92,13 +114,14 @@ const DashboardLayout = () => {
                 key={item.path}
                 {...item}
                 active={location.pathname === item.path}
+                onClick={() => setIsSidebarOpen(false)}
               />
             ))}
           </div>
 
           <div className="menu-group secondary-group">
             <span className="group-label">Preferences</span>
-            <Link to="/dashboard/settings">
+            <Link to="/dashboard/settings" onClick={() => setIsSidebarOpen(false)}>
               <div className={`sidebar-item ${location.pathname === '/dashboard/settings' ? 'active' : ''}`}>
                 <Settings size={20}/>
                 <span>Settings</span>
@@ -112,7 +135,7 @@ const DashboardLayout = () => {
                 <div className="theme-switch-thumb" />
               </div>
             </div>
-            <div className="sidebar-item logout" onClick={handleLogout}>
+            <div className="sidebar-item logout" onClick={() => { setIsSidebarOpen(false); handleLogout(); }}>
               <LogOut size={20}/>
               <span>Logout</span>
             </div>
@@ -123,9 +146,12 @@ const DashboardLayout = () => {
       {/* Main Content Area */}
       <main className="dashboard-main">
         <header className="dashboard-header">
+          <button className="mobile-menu-btn" onClick={() => setIsSidebarOpen(true)}>
+            <Menu size={24} />
+          </button>
           <div className="header-search">
             <Search size={18} className="search-icon" />
-            <input type="text" placeholder="Search assignments, notices..." />
+            <input type="text" placeholder="Search..." />
           </div>
           <div className="header-actions">
             <button className="icon-btn notification-btn">
@@ -137,7 +163,11 @@ const DashboardLayout = () => {
                 <span className="user-name">{user?.name || 'User'}</span>
                 <span className="user-role">{role.toUpperCase()}</span>
               </div>
-              <div className="avatar">{userInitials}</div>
+              <div className="avatar">
+                {user?.profileImage ? (
+                  <img src={user.profileImage} alt="" className="avatar-img-round" />
+                ) : userInitials}
+              </div>
             </div>
           </div>
         </header>
@@ -187,19 +217,14 @@ const DashboardLayout = () => {
           border-bottom: 1px solid var(--border);
         }
 
-        .logo-sm {
+        .logo-img-sm {
           width: 42px;
           height: 42px;
-          background: var(--grad-primary);
-          border-radius: 12px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          font-weight: 900;
-          font-size: 1.3rem;
-          flex-shrink: 0;
-          box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+          object-fit: contain;
+          border-radius: 50%;
+          background: white;
+          padding: 2px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .sidebar-title h2 {
@@ -441,6 +466,13 @@ const DashboardLayout = () => {
           font-weight: 700;
           color: white;
           font-size: 0.85rem;
+          overflow: hidden;
+        }
+
+        .avatar-img-round {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
         }
 
         .content-scroll {
@@ -461,10 +493,45 @@ const DashboardLayout = () => {
         @media (max-width: 768px) {
           .sidebar { 
             position: fixed;
+            left: 0;
+            top: 0;
             transform: translateX(-100%);
+            transition: transform var(--transition-normal);
+            box-shadow: none;
           }
-          .dashboard-header { padding: 0 16px; }
+          .sidebar.open {
+            transform: translateX(0);
+            box-shadow: var(--shadow-xl);
+          }
+          .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 90;
+          }
+          .mobile-menu-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            background: none;
+            color: var(--text-main);
+          }
+          .mobile-close-btn {
+            display: flex;
+            margin-left: auto;
+            background: none;
+            color: var(--text-muted);
+          }
+          .dashboard-header { padding: 0 16px; gap: 12px; }
+          .header-search { max-width: none; }
+          .user-info { display: none; }
           .content-scroll { padding: 16px; }
+        }
+
+        @media (min-width: 769px) {
+          .mobile-menu-btn, .mobile-close-btn { display: none; }
         }
       `}</style>
     </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Users, BookOpen, ClipboardCheck, Search, GraduationCap, UserCheck, ChevronDown } from 'lucide-react';
+import { Users, BookOpen, ClipboardCheck, Search, GraduationCap, UserCheck, ChevronDown, CheckSquare } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -176,7 +176,41 @@ const TeacherDashboard = () => {
               <span>Post Assignment</span>
               <p>Create new homework</p>
             </motion.button>
+            <motion.button 
+              className="action-tile"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => navigate('/dashboard/results')}
+            >
+              <div className="action-icon" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
+                <CheckSquare size={28}/>
+              </div>
+              <span>Add Marks</span>
+              <p>Enter exam results</p>
+            </motion.button>
+          </div>
+        </section>
 
+        {/* Dedicated Marks Section for Maximum Visibility */}
+        <section className="glass-card section-padded mt-6" style={{ gridColumn: '1 / -1' }}>
+          <div className="section-header-row">
+            <h3>📈 Student Marks Management</h3>
+            <button className="btn btn-primary" onClick={() => navigate('/dashboard/results')}>Open Full Marks Panel</button>
+          </div>
+          <p className="text-muted mb-4">You can now add and manage student marks for terminal and final examinations. Click below to start entering scores.</p>
+          <div className="quick-stats-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+            <div className="mini-card" style={{ padding: '16px', background: 'var(--bg-input)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>MAPPING STATUS</span>
+              <h4 style={{ margin: '4px 0 0' }}>All Classes Enabled</h4>
+            </div>
+            <div className="mini-card" style={{ padding: '16px', background: 'var(--bg-input)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>LAST UPDATE</span>
+              <h4 style={{ margin: '4px 0 0' }}>Just Now</h4>
+            </div>
+            <div className="mini-card" style={{ padding: '16px', background: 'var(--bg-input)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>TOTAL RECORDS</span>
+              <h4 style={{ margin: '4px 0 0' }}>Syncing...</h4>
+            </div>
           </div>
         </section>
       </div>

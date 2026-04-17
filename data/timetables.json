@@ -3,12 +3,145 @@
     "standard": "8th",
     "schedule": [
       {
-        "time": "08:30 - 12:30",
-        "mon": "maths",
-        "tue": "english ",
-        "wed": "hindi ",
-        "thu": "marathi",
-        "fri": "social science"
+        "time": "11:00 - 11:40",
+        "mon": "maths-1",
+        "tue": "sci-2",
+        "wed": "maths-1",
+        "thu": "maths-1",
+        "fri": "english"
+      },
+      {
+        "time": "11:40 - 12:10",
+        "mon": "english",
+        "tue": "history",
+        "wed": "english",
+        "thu": "sci-2",
+        "fri": "hindi"
+      },
+      {
+        "time": "12:25 - 12:55",
+        "mon": "history",
+        "tue": "maths-1",
+        "wed": "maths-2",
+        "thu": "sci-1",
+        "fri": "maths-1"
+      },
+      {
+        "time": "12:55 - 1:25",
+        "mon": "geo",
+        "tue": "hindi",
+        "wed": "sci-1",
+        "thu": "history",
+        "fri": "marathi"
+      },
+      {
+        "time": "2:15 - 2:45",
+        "mon": "maths-2",
+        "tue": "marathi",
+        "wed": "hindi",
+        "thu": "geo",
+        "fri": "maths-2"
+      },
+      {
+        "time": "2:45 - 3:15",
+        "mon": "sci-1",
+        "tue": "maths-2",
+        "wed": "sci-2",
+        "thu": "maths-2",
+        "fri": "geo"
+      },
+      {
+        "time": "3:30 - 4:00",
+        "mon": "hindi",
+        "tue": "geo",
+        "wed": "history",
+        "thu": "sci-2",
+        "fri": "p.e"
+      },
+      {
+        "time": "4:00 - 4:30",
+        "mon": "sci-2",
+        "tue": "scout",
+        "wed": "marathi",
+        "thu": "p.e",
+        "fri": "marathi"
+      }
+    ]
+  },
+  {
+    "standard": "10th",
+    "schedule": [
+      {
+        "time": "11:00 - 11:40",
+        "mon": "Marathi",
+        "tue": "Hindi",
+        "wed": "English",
+        "thu": "Maths-1",
+        "fri": "Sci-1",
+        "sat": "History"
+      },
+      {
+        "time": "11:40 - 12:10",
+        "mon": "English",
+        "tue": "Maths-2",
+        "wed": "Hindi",
+        "thu": "Marathi",
+        "fri": "Sci-2",
+        "sat": "Geography"
+      },
+      {
+        "time": "12:25 - 12:55",
+        "mon": "English",
+        "tue": "history",
+        "wed": "Maths-2",
+        "thu": "Math-2",
+        "fri": "Math-1",
+        "sat": "Hindi"
+      },
+      {
+        "time": "12:55 - 01:25",
+        "mon": "Sci-1",
+        "tue": "Marathi",
+        "wed": "English",
+        "thu": "Geography",
+        "fri": "Drawing",
+        "sat": "Math-1"
+      },
+      {
+        "time": "02:15 - 02:45",
+        "mon": "Maths-2",
+        "tue": "Sci-2",
+        "wed": "Drawing",
+        "thu": "Hindi",
+        "fri": "P.E",
+        "sat": "Sci-1"
+      },
+      {
+        "time": "02:45 - 03:15",
+        "mon": "Sci-1",
+        "tue": "P.E",
+        "wed": "Math-2",
+        "thu": "Sci-1",
+        "fri": "History",
+        "sat": "Math-2"
+      },
+      {
+        "time": "03:30 - 04:00",
+        "mon": "Geography",
+        "tue": "Sci-2",
+        "wed": "scout",
+        "thu": "English",
+        "fri": "Hindi",
+        "sat": "Sci-2"
+      },
+      {
+        "time": "04:00 - 04:30",
+        "mon": "Maths-1",
+        "tue": "Marathi",
+        "wed": "Scout",
+        "thu": "Geography",
+        "fri": "English",
+        "sat": "P.E"
       }
     ]
   }

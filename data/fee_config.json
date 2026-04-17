@@ -1,0 +1,10 @@
+[
+  {
+    "standard": "10th",
+    "tuitionFee": 10,
+    "examFee": 50,
+    "libraryFee": 0,
+    "sportsFee": 20,
+    "totalFee": 80
+  }
+]

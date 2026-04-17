@@ -28,7 +28,7 @@ const Navbar = () => {
     <nav className={`navbar ${isScrolled ? 'scrolled glass' : ''}`}>
       <div className="container nav-content">
         <Link to="/" className="logo-container">
-          <div className="nav-logo-icon">प</div>
+          <img src="/assets/logo.png" alt="School Logo" className="nav-logo-img" />
           <span className="school-name">Parishram Vidyalay Dundage</span>
         </Link>
 
@@ -116,18 +116,14 @@ const Navbar = () => {
           gap: 12px;
         }
 
-        .nav-logo-icon {
-          width: 38px;
-          height: 38px;
-          background: var(--grad-primary);
-          border-radius: 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          font-weight: 900;
-          font-size: 1.2rem;
-          box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        .nav-logo-img {
+          width: 42px;
+          height: 42px;
+          object-fit: contain;
+          border-radius: 50%;
+          background: white;
+          padding: 2px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .school-name {
