@@ -15,7 +15,9 @@ import {
   Search,
   ChevronRight,
   Menu,
-  X
+  X,
+  FileText,
+  Trophy
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
@@ -57,6 +59,8 @@ const DashboardLayout = () => {
       { icon: <LayoutDashboard size={20}/>, label: 'Overview', path: '/dashboard/student' },
       { icon: <Calendar size={20}/>, label: 'Timetable', path: '/dashboard/timetable' },
       { icon: <BookText size={20}/>, label: 'Assignments', path: '/dashboard/assignments' },
+      { icon: <FileText size={20}/>, label: 'Study Notes', path: '/dashboard/notes' },
+      { icon: <Trophy size={20}/>, label: 'Quizzes', path: '/dashboard/quizzes' },
       { icon: <ClipboardCheck size={20}/>, label: 'Attendance', path: '/dashboard/attendance' },
       { icon: <CheckSquare size={20}/>, label: 'Exams & Results', path: '/dashboard/results' },
       { icon: <IndianRupee size={20}/>, label: 'Fees', path: '/dashboard/fees' },
@@ -66,12 +70,16 @@ const DashboardLayout = () => {
       { icon: <LayoutDashboard size={20}/>, label: 'Teacher Panel', path: '/dashboard/teacher' },
       { icon: <ClipboardCheck size={20}/>, label: 'Mark Attendance', path: '/dashboard/attendance' },
       { icon: <BookText size={20}/>, label: 'Post Assignments', path: '/dashboard/assignments' },
+      { icon: <FileText size={20}/>, label: 'Share Notes', path: '/dashboard/notes' },
+      { icon: <Trophy size={20}/>, label: 'Quizzes', path: '/dashboard/quizzes' },
       { icon: <CheckSquare size={20}/>, label: 'Add Marks', path: '/dashboard/results' },
     ],
     admin: [
       { icon: <LayoutDashboard size={20}/>, label: 'Admin Panel', path: '/dashboard/admin' },
       { icon: <ClipboardCheck size={20}/>, label: 'Attendance', path: '/dashboard/attendance' },
       { icon: <BookText size={20}/>, label: 'Assignments', path: '/dashboard/assignments' },
+      { icon: <FileText size={20}/>, label: 'Notes', path: '/dashboard/notes' },
+      { icon: <Trophy size={20}/>, label: 'Quizzes', path: '/dashboard/quizzes' },
       { icon: <IndianRupee size={20}/>, label: 'Fees', path: '/dashboard/fees' },
       { icon: <Receipt size={20}/>, label: 'Transactions', path: '/dashboard/transactions' },
     ]

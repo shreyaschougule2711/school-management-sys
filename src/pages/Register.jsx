@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { User, Mail, KeyRound, Eye, EyeOff, UserPlus, Phone, BookOpen, Users, Award } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { User, Mail, KeyRound, Eye, EyeOff, UserPlus, Phone, BookOpen, Users, Award, Shield, CheckCircle } from 'lucide-react';
 
 const STANDARDS = ['5th', '6th', '7th', '8th', '9th', '10th'];
 const SUBJECTS = ['Mathematics', 'Science', 'English', 'Hindi', 'Social Studies', 'Computer Science', 'Physical Education', 'Art'];
@@ -21,18 +21,71 @@ const Register = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleRegister = async (e) => {
+  // OTP State
+  const [otpStep, setOtpStep] = useState(1); // 1 = form, 2 = otp verify
+  const [otp, setOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpMessage, setOtpMessage] = useState('');
+
+  const handleSendOTP = async (e) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
     
+    if (!phone || phone.length < 10) {
+      setError('Please enter a valid 10-digit phone number.');
+      return;
+    }
     if (password.length < 4) {
       setError('Password must be at least 4 characters long.');
-      setLoading(false);
+      return;
+    }
+    if (!name || !email) {
+      setError('Please fill in all required fields.');
       return;
     }
 
+    setLoading(true);
     try {
+      const res = await fetch('/api/otp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, purpose: 'register' })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOtpSent(true);
+        setOtpStep(2);
+        setOtpMessage(`OTP sent to ${phone}. For testing, OTP: ${data.otp_for_testing}`);
+      } else {
+        setError(data.message || 'Failed to send OTP.');
+      }
+    } catch (e) {
+      setError('Cannot connect to server.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyAndRegister = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      // Verify OTP first
+      const verifyRes = await fetch('/api/otp/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, otp, purpose: 'register' })
+      });
+      const verifyData = await verifyRes.json();
+      if (!verifyData.success) {
+        setError(verifyData.message);
+        setLoading(false);
+        return;
+      }
+
+      // Now register
       const response = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -58,6 +111,22 @@ const Register = () => {
     }
   };
 
+  const handleResendOTP = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/otp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, purpose: 'register' })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOtpMessage(`OTP resent! For testing, OTP: ${data.otp_for_testing}`);
+      }
+    } catch (e) {}
+    finally { setLoading(false); }
+  };
+
   return (
     <div className="auth-page">
       <div className="auth-bg-shapes">
@@ -77,8 +146,8 @@ const Register = () => {
             <div className="auth-logo">
               <img src="/assets/logo.png" alt="School Logo" className="auth-logo-img" />
             </div>
-            <h2>Create Account</h2>
-            <p>Join the Parishram Vidyalay Dundage community</p>
+            <h2>{otpStep === 2 ? 'Verify Phone' : 'Create Account'}</h2>
+            <p>{otpStep === 2 ? 'Enter the OTP sent to your phone' : 'Join the Parishram Vidyalay Dundage community'}</p>
           </div>
 
           {error && (
@@ -91,131 +160,189 @@ const Register = () => {
             </motion.div>
           )}
 
-          <form onSubmit={handleRegister}>
-            <div className="role-selector">
-              {['student', 'teacher'].map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  className={`role-btn ${role === r ? 'active' : ''}`}
-                  onClick={() => setRole(r)}
-                >
-                  {r === 'student' ? <Users size={16}/> : <BookOpen size={16}/>}
-                  {r.charAt(0).toUpperCase() + r.slice(1)}
-                </button>
-              ))}
-            </div>
+          {otpMessage && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="success-banner"
+            >
+              {otpMessage}
+            </motion.div>
+          )}
 
-            <div className="form-group">
-              <label><User size={15}/> Full Name</label>
-              <input 
-                type="text" 
-                placeholder="Enter your full name" 
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label><Mail size={15}/> Email Address</label>
-              <input 
-                type="email" 
-                placeholder="Enter your email address" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label><Phone size={15}/> Phone Number</label>
-              <input 
-                type="tel" 
-                placeholder="Enter phone number" 
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-              />
-            </div>
-
-            {role === 'student' && (
-              <>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label><BookOpen size={15}/> Standard / Class</label>
-                    <select value={standard} onChange={(e) => setStandard(e.target.value)}>
-                      {STANDARDS.map(s => (
-                        <option key={s} value={s}>{s} Standard</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label><Users size={15}/> Parent / Guardian Name</label>
-                    <input 
-                      type="text" 
-                      placeholder="Parent's name" 
-                      value={parentName}
-                      onChange={(e) => setParentName(e.target.value)}
-                    />
-                  </div>
+          <AnimatePresence mode="wait">
+            {otpStep === 1 ? (
+              <motion.form key="register-form" onSubmit={handleSendOTP} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <div className="role-selector">
+                  {['student', 'teacher'].map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      className={`role-btn ${role === r ? 'active' : ''}`}
+                      onClick={() => setRole(r)}
+                    >
+                      {r === 'student' ? <Users size={16}/> : <BookOpen size={16}/>}
+                      {r.charAt(0).toUpperCase() + r.slice(1)}
+                    </button>
+                  ))}
                 </div>
-              </>
-            )}
 
-            {role === 'teacher' && (
-              <div className="form-row">
                 <div className="form-group">
-                  <label><BookOpen size={15}/> Subject Specialization</label>
-                  <select value={subject} onChange={(e) => setSubject(e.target.value)}>
-                    {SUBJECTS.map(s => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label><Award size={15}/> Degree / Qualification</label>
+                  <label><User size={15}/> Full Name</label>
                   <input 
                     type="text" 
-                    placeholder="e.g. M.Sc. B.Ed." 
-                    value={degree}
-                    onChange={(e) => setDegree(e.target.value)}
+                    placeholder="Enter your full name" 
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                     required
                   />
                 </div>
-              </div>
-            )}
 
-            <div className="form-group">
-              <label><KeyRound size={15}/> Create Password</label>
-              <div className="password-field">
-                <input 
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Create a password (min. 4 chars)" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={4}
-                />
-                <button 
-                  type="button" 
-                  className="toggle-pass"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff size={18}/> : <Eye size={18}/>}
+                <div className="form-group">
+                  <label><Mail size={15}/> Email Address</label>
+                  <input 
+                    type="email" 
+                    placeholder="Enter your email address" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label><Phone size={15}/> Phone Number <span className="required-star">*</span></label>
+                  <input 
+                    type="tel" 
+                    placeholder="Enter 10-digit phone number" 
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    required
+                    maxLength={10}
+                  />
+                  <span className="field-hint">OTP will be sent to this number for verification</span>
+                </div>
+
+                {role === 'student' && (
+                  <>
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label><BookOpen size={15}/> Standard / Class</label>
+                        <select value={standard} onChange={(e) => setStandard(e.target.value)}>
+                          {STANDARDS.map(s => (
+                            <option key={s} value={s}>{s} Standard</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="form-group">
+                        <label><Users size={15}/> Parent / Guardian Name</label>
+                        <input 
+                          type="text" 
+                          placeholder="Parent's name" 
+                          value={parentName}
+                          onChange={(e) => setParentName(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {role === 'teacher' && (
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label><BookOpen size={15}/> Subject Specialization</label>
+                      <select value={subject} onChange={(e) => setSubject(e.target.value)}>
+                        {SUBJECTS.map(s => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label><Award size={15}/> Degree / Qualification</label>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. M.Sc. B.Ed." 
+                        value={degree}
+                        onChange={(e) => setDegree(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="form-group">
+                  <label><KeyRound size={15}/> Create Password</label>
+                  <div className="password-field">
+                    <input 
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Create a password (min. 4 chars)" 
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={4}
+                    />
+                    <button 
+                      type="button" 
+                      className="toggle-pass"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff size={18}/> : <Eye size={18}/>}
+                    </button>
+                  </div>
+                </div>
+
+                <button type="submit" className="btn btn-primary w-full submit-btn" disabled={loading}>
+                  {loading ? (
+                    <span className="spinner"></span>
+                  ) : (
+                    <>
+                      <Shield size={18}/> Verify Phone & Register
+                    </>
+                  )}
                 </button>
-              </div>
-            </div>
+              </motion.form>
+            ) : (
+              <motion.form key="otp-form" onSubmit={handleVerifyAndRegister} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <div className="otp-verify-section">
+                  <div className="otp-phone-display">
+                    <Phone size={20}/>
+                    <span>{phone}</span>
+                  </div>
+                  
+                  <div className="form-group">
+                    <label><Shield size={15}/> Enter 6-digit OTP</label>
+                    <input 
+                      type="text" 
+                      placeholder="Enter OTP" 
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value)}
+                      required
+                      maxLength={6}
+                      className="otp-input"
+                    />
+                  </div>
 
-            <button type="submit" className="btn btn-primary w-full submit-btn" disabled={loading}>
-              {loading ? (
-                <span className="spinner"></span>
-              ) : (
-                <>
-                  <UserPlus size={18}/> Complete Registration
-                </>
-              )}
-            </button>
-          </form>
+                  <button type="submit" className="btn btn-primary w-full submit-btn" disabled={loading}>
+                    {loading ? (
+                      <span className="spinner"></span>
+                    ) : (
+                      <>
+                        <CheckCircle size={18}/> Verify & Complete Registration
+                      </>
+                    )}
+                  </button>
+
+                  <div className="otp-actions">
+                    <button type="button" className="resend-btn" onClick={handleResendOTP} disabled={loading}>
+                      Resend OTP
+                    </button>
+                    <button type="button" className="change-phone-btn" onClick={() => { setOtpStep(1); setOtpMessage(''); setError(''); }}>
+                      Change Phone Number
+                    </button>
+                  </div>
+                </div>
+              </motion.form>
+            )}
+          </AnimatePresence>
 
           <div className="auth-footer">
             <p>
@@ -231,7 +358,7 @@ const Register = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 80px 2rem;
+          padding: 80px 1rem;
           position: relative;
           overflow: hidden;
         }
@@ -251,29 +378,23 @@ const Register = () => {
         }
 
         .shape-1 {
-          width: 400px;
-          height: 400px;
+          width: 400px; height: 400px;
           background: var(--primary);
-          top: -100px;
-          right: -100px;
+          top: -100px; right: -100px;
           animation: float 6s ease-in-out infinite;
         }
 
         .shape-2 {
-          width: 300px;
-          height: 300px;
+          width: 300px; height: 300px;
           background: var(--secondary);
-          bottom: -50px;
-          left: -50px;
+          bottom: -50px; left: -50px;
           animation: float 8s ease-in-out infinite reverse;
         }
 
         .shape-3 {
-          width: 200px;
-          height: 200px;
+          width: 200px; height: 200px;
           background: var(--accent);
-          top: 50%;
-          left: 50%;
+          top: 50%; left: 50%;
           animation: float 7s ease-in-out infinite;
         }
 
@@ -309,8 +430,7 @@ const Register = () => {
         }
 
         .auth-logo-img {
-          width: 70px;
-          height: 70px;
+          width: 70px; height: 70px;
           object-fit: contain;
           border-radius: 50%;
           background: white;
@@ -318,20 +438,25 @@ const Register = () => {
           box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
         }
 
-        .auth-header h2 {
-          font-size: 1.75rem;
-          margin-bottom: 8px;
-        }
-
-        .auth-header p {
-          color: var(--text-muted);
-          font-size: 0.9rem;
-        }
+        .auth-header h2 { font-size: 1.75rem; margin-bottom: 8px; }
+        .auth-header p { color: var(--text-muted); font-size: 0.9rem; }
 
         .error-banner {
           background: rgba(239, 68, 68, 0.1);
           border: 1px solid rgba(239, 68, 68, 0.2);
           color: #dc2626;
+          padding: 12px 16px;
+          border-radius: var(--radius-md);
+          font-size: 0.85rem;
+          font-weight: 600;
+          margin-bottom: 20px;
+          text-align: center;
+        }
+
+        .success-banner {
+          background: rgba(16, 185, 129, 0.1);
+          border: 1px solid rgba(16, 185, 129, 0.2);
+          color: #059669;
           padding: 12px 16px;
           border-radius: var(--radius-md);
           font-size: 0.85rem;
@@ -352,20 +477,14 @@ const Register = () => {
           border-radius: var(--radius-sm);
           background: var(--bg-input);
           border: 1.5px solid var(--border);
-          font-weight: 600;
-          font-size: 0.85rem;
+          font-weight: 600; font-size: 0.85rem;
           color: var(--text-muted);
           transition: all var(--transition-fast);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
+          display: flex; align-items: center;
+          justify-content: center; gap: 8px;
         }
 
-        .role-btn:hover {
-          border-color: var(--primary);
-          color: var(--primary);
-        }
+        .role-btn:hover { border-color: var(--primary); color: var(--primary); }
 
         .role-btn.active {
           background: var(--grad-primary);
@@ -374,18 +493,23 @@ const Register = () => {
           box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
 
-        .form-group {
-          margin-bottom: 18px;
-        }
+        .form-group { margin-bottom: 18px; }
 
         .form-group label {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 0.85rem;
-          font-weight: 600;
-          margin-bottom: 8px;
+          display: flex; align-items: center;
+          gap: 6px; font-size: 0.85rem;
+          font-weight: 600; margin-bottom: 8px;
           color: var(--text-muted);
+        }
+
+        .required-star { color: #ef4444; }
+
+        .field-hint {
+          display: block;
+          font-size: 0.72rem;
+          color: var(--text-muted);
+          margin-top: 4px;
+          font-style: italic;
         }
 
         .form-group input, .form-group select {
@@ -398,10 +522,7 @@ const Register = () => {
           font-size: 0.9rem;
         }
 
-        .form-group select {
-          cursor: pointer;
-          appearance: auto;
-        }
+        .form-group select { cursor: pointer; appearance: auto; }
 
         .form-group input:focus, .form-group select:focus {
           border-color: var(--primary);
@@ -415,68 +536,81 @@ const Register = () => {
           gap: 12px;
         }
 
-        .password-field {
-          position: relative;
-        }
-
-        .password-field input {
-          padding-right: 48px;
-        }
+        .password-field { position: relative; }
+        .password-field input { padding-right: 48px; }
 
         .toggle-pass {
-          position: absolute;
-          right: 12px;
-          top: 50%;
+          position: absolute; right: 12px; top: 50%;
           transform: translateY(-50%);
-          background: none;
-          color: var(--text-muted);
-          padding: 4px;
+          background: none; color: var(--text-muted); padding: 4px;
         }
-
-        .toggle-pass:hover {
-          color: var(--primary);
-        }
+        .toggle-pass:hover { color: var(--primary); }
 
         .submit-btn {
-          width: 100%;
-          justify-content: center;
-          padding: 14px;
-          font-size: 0.95rem;
-          margin-top: 8px;
+          width: 100%; justify-content: center;
+          padding: 14px; font-size: 0.95rem; margin-top: 8px;
         }
-
-        .submit-btn:disabled {
-          opacity: 0.7;
-          cursor: not-allowed;
-        }
+        .submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
 
         .spinner {
-          width: 20px;
-          height: 20px;
+          width: 20px; height: 20px;
           border: 2px solid rgba(255,255,255,0.3);
-          border-top-color: white;
-          border-radius: 50%;
+          border-top-color: white; border-radius: 50%;
           animation: spin 0.6s linear infinite;
         }
-
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         .auth-footer {
+          text-align: center; margin-top: 24px;
+          font-size: 0.9rem; color: var(--text-muted);
+        }
+        .auth-footer a { color: var(--primary); font-weight: 700; }
+
+        .otp-verify-section {
           text-align: center;
-          margin-top: 24px;
-          font-size: 0.9rem;
-          color: var(--text-muted);
         }
 
-        .auth-footer a {
-          color: var(--primary);
+        .otp-phone-display {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 20px;
+          background: var(--bg-input);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-full);
+          margin-bottom: 24px;
           font-weight: 700;
+          color: var(--primary);
+        }
+
+        .otp-input {
+          text-align: center;
+          font-size: 1.5rem !important;
+          letter-spacing: 12px;
+          font-weight: 800;
+        }
+
+        .otp-actions {
+          display: flex;
+          justify-content: center;
+          gap: 20px;
+          margin-top: 20px;
+        }
+
+        .resend-btn, .change-phone-btn {
+          background: none;
+          color: var(--primary);
+          font-size: 0.8rem;
+          font-weight: 700;
+        }
+        .resend-btn:hover, .change-phone-btn:hover {
+          text-decoration: underline;
         }
 
         @media (max-width: 500px) {
           .form-row { grid-template-columns: 1fr; }
+          .auth-card { padding: 1.5rem; }
+          .auth-header h2 { font-size: 1.4rem; }
         }
       `}</style>
     </div>

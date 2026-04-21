@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1776771110029.1377,
+    "to": "8379801244",
+    "message": "HII",
+    "sentAt": "2026-04-21T11:31:50.029Z",
+    "type": "custom"
+  },
+  {
+    "id": 1776773797262,
+    "to": "8379801244",
+    "message": "Your Parishram Vidyalay OTP is: 538812. Valid for 5 minutes.",
+    "sentAt": "2026-04-21T12:16:37.262Z",
+    "type": "otp"
+  }
+]

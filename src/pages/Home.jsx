@@ -27,7 +27,7 @@ const Home = () => {
   return (
     <div className="home-page">
       {/* Hero Section */}
-      <section className="hero">
+      <section id="home" className="hero">
         <div className="hero-overlay"></div>
         <img src={heroBg} alt="School Campus" className="hero-img" />
         <div className="container hero-content">
@@ -92,7 +92,7 @@ const Home = () => {
 
       {/* Dynamic Admin Events / Highlights Section */}
       {events.length > 0 && (
-        <section className="section-padding" style={{ background: 'var(--bg-main)' }}>
+        <section id="events" className="section-padding" style={{ background: 'var(--bg-main)' }}>
           <div className="container">
             <div className="section-header text-center">
               <h2>Top Highlights & Events</h2>
@@ -112,7 +112,7 @@ const Home = () => {
       )}
 
       {/* Traditional Highlights Section */}
-      <section className="section-padding">
+      <section id="highlights" className="section-padding">
         <div className="container">
           <div className="section-header text-center">
             <h2>Why Choose Us?</h2>
@@ -131,7 +131,7 @@ const Home = () => {
       </section>
 
       {/* Faculty Section */}
-      <section className="section-padding" style={{ background: 'var(--bg-hover)' }}>
+      <section id="faculty" className="section-padding" style={{ background: 'var(--bg-hover)' }}>
         <div className="container">
           <div className="section-header text-center">
             <h2>Our Respected Faculty</h2>
@@ -170,7 +170,7 @@ const Home = () => {
 
       {/* Infrastructure Section */}
       {infra.length > 0 && (
-        <section className="section-padding">
+        <section id="infrastructure" className="section-padding">
           <div className="container">
             <div className="section-header text-center">
               <h2>Infrastructure & Facilities</h2>
@@ -249,9 +249,23 @@ const Home = () => {
         .text-center { text-align: center; }
 
         @media (max-width: 768px) {
-          .hero h1 { font-size: 2.5rem; }
-          .hero-btns { flex-direction: column; }
+          .hero { height: auto; min-height: 500px; padding: 100px 0 60px; text-align: center; }
+          .hero-content { margin: 0 auto; padding: 0 16px; }
+          .hero-img { object-position: center; }
+          .hero h1 { font-size: 1.8rem; letter-spacing: -1px; }
+          .hero-subtitle { font-size: 1rem; margin: 0 auto 24px; padding: 0 20px; }
+          .hero-btns { flex-direction: column; align-items: center; width: 100%; max-width: 280px; margin: 0 auto; gap: 12px; }
+          .hero-btns .btn { width: 100%; justify-content: center; padding: 14px; }
+          .section-header h2 { font-size: 1.8rem; }
           .faculty-grid { grid-template-columns: 1fr; }
+          .principal-card { padding: 32px 16px; width: 100%; }
+          .gallery-item-card { width: 260px !important; }
+          .hero-overlay { background: linear-gradient(180deg, rgba(2, 6, 23, 0.8) 0%, rgba(2, 6, 23, 0.6) 100%); }
+        }
+
+        @media (max-width: 480px) {
+          .hero h1 { font-size: 1.6rem; }
+          .hero { min-height: 450px; }
         }
       `}</style>
     </div>

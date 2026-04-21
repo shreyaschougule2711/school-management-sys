@@ -1,0 +1,71 @@
+[
+  {
+    "standard": "5th",
+    "subjects": [
+      "Mathematics",
+      "Science",
+      "English",
+      "Hindi",
+      "Social Studies",
+      "Computer Science"
+    ]
+  },
+  {
+    "standard": "6th",
+    "subjects": [
+      "Mathematics",
+      "Science",
+      "English",
+      "Hindi",
+      "Social Studies",
+      "Computer Science"
+    ]
+  },
+  {
+    "standard": "7th",
+    "subjects": [
+      "Mathematics",
+      "Science",
+      "English",
+      "Hindi",
+      "Social Studies",
+      "Computer Science"
+    ]
+  },
+  {
+    "standard": "8th",
+    "subjects": [
+      "Mathematics",
+      "Science",
+      "English",
+      "Hindi",
+      "History",
+      "Geography",
+      "Computer Science"
+    ]
+  },
+  {
+    "standard": "9th",
+    "subjects": [
+      "Mathematics",
+      "Science",
+      "English",
+      "Hindi",
+      "History",
+      "Geography",
+      "Computer Science"
+    ]
+  },
+  {
+    "standard": "10th",
+    "subjects": [
+      "Mathematics",
+      "Science",
+      "English",
+      "Hindi",
+      "History",
+      "Geography",
+      "Computer Science"
+    ]
+  }
+]

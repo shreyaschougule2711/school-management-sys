@@ -16,10 +16,15 @@ import Results from './pages/Results';
 import Fees from './pages/Fees';
 import Transactions from './pages/Transactions';
 import Settings from './pages/Settings';
+import Notes from './pages/Notes';
+import Quizzes from './pages/Quizzes';
+
+import ScrollToTop from './components/ScrollToTop';
 
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LandingLayout />}>
@@ -41,6 +46,8 @@ function App() {
           <Route path="results" element={<Results />} />
           <Route path="fees" element={<Fees />} />
           <Route path="transactions" element={<Transactions />} />
+          <Route path="notes" element={<Notes />} />
+          <Route path="quizzes" element={<Quizzes />} />
           <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>

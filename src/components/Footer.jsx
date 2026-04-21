@@ -1,7 +1,34 @@
-import { GraduationCap, Mail, Phone, MapPin, Globe, MessageCircle, Send, Users } from 'lucide-react';
+import { GraduationCap, Mail, Phone, MapPin, Globe, MessageCircle, Send, Users, ChevronDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
 
 const Footer = () => {
+  const [activeTab, setActiveTab] = useState(null);
+
+  const toggleTab = (tab) => {
+    if (window.innerWidth > 768) return;
+    const isNew = activeTab !== tab;
+    setActiveTab(isNew ? tab : null);
+    
+    if (isNew) {
+      setTimeout(() => {
+        const el = document.getElementById(`footer-tab-${tab}`);
+        if (el) {
+          const offset = 80; // Buffer for floating nav if any
+          const bodyRect = document.body.getBoundingClientRect().top;
+          const elementRect = el.getBoundingClientRect().top;
+          const elementPosition = elementRect - bodyRect;
+          const offsetPosition = elementPosition - 20;
+
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        }
+      }, 300);
+    }
+  };
+
   return (
     <footer className="footer section-padding">
       <div className="container">
@@ -23,9 +50,12 @@ const Footer = () => {
             </div>
           </div>
 
-          <div className="footer-col">
-            <h3>Quick Links</h3>
-            <ul className="footer-links">
+          <div className="footer-col" id="footer-tab-quick">
+            <h3 onClick={() => toggleTab('quick')} className={activeTab === 'quick' ? 'active' : ''}>
+              Quick Links
+              <ChevronDown className={`mobile-chevron ${activeTab === 'quick' ? 'rotate' : ''}`} size={18} />
+            </h3>
+            <ul className={`footer-links ${activeTab === 'quick' ? 'show' : ''}`}>
               <li><Link to="/">Home</Link></li>
               <li><Link to="/about">About Us</Link></li>
               <li><Link to="/admissions">Admissions</Link></li>
@@ -34,19 +64,25 @@ const Footer = () => {
             </ul>
           </div>
 
-          <div className="footer-col">
-            <h3>Academics</h3>
-            <ul className="footer-links">
-              <li><a href="#">Curriculum</a></li>
-              <li><a href="#">School Calendar</a></li>
-              <li><a href="#">Examinations</a></li>
-              <li><a href="#">E-Library</a></li>
+          <div className="footer-col" id="footer-tab-academic">
+            <h3 onClick={() => toggleTab('academic')} className={activeTab === 'academic' ? 'active' : ''}>
+              Academics
+              <ChevronDown className={`mobile-chevron ${activeTab === 'academic' ? 'rotate' : ''}`} size={18} />
+            </h3>
+            <ul className={`footer-links ${activeTab === 'academic' ? 'show' : ''}`}>
+              <li><a href="#events">Curriculum</a></li>
+              <li><Link to="/dashboard/timetable">School Calendar</Link></li>
+              <li><a href="#highlights">Examinations</a></li>
+              <li><Link to="/dashboard/notes">E-Library</Link></li>
             </ul>
           </div>
 
-          <div className="footer-col">
-            <h3>Contact Us</h3>
-            <ul className="contact-info">
+          <div className="footer-col" id="footer-tab-contact">
+            <h3 onClick={() => toggleTab('contact')} className={activeTab === 'contact' ? 'active' : ''}>
+              Contact Us
+              <ChevronDown className={`mobile-chevron ${activeTab === 'contact' ? 'rotate' : ''}`} size={18} />
+            </h3>
+            <ul className={`contact-info ${activeTab === 'contact' ? 'show' : ''}`}>
               <li>
                 <MapPin size={18} className="contact-icon" />
                 <span>At Post Dundage, Tal - Gadhinglaj Pincode - 416501</span>
@@ -88,6 +124,7 @@ const Footer = () => {
           display: flex;
           align-items: center;
           gap: 12px;
+          margin-bottom: 24px;
         }
         
         .footer-logo-img {
@@ -107,15 +144,35 @@ const Footer = () => {
           -webkit-text-fill-color: transparent;
         }
 
-        .footer-desc {
+        .school-desc {
           color: var(--text-muted);
+          line-height: 1.6;
+          font-size: 0.95rem;
+          max-width: 350px;
+        }
+
+        .footer h3 {
+          font-size: 1.25rem;
           margin-bottom: 24px;
-          max-width: 300px;
+          color: var(--text-main);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+
+        .mobile-chevron {
+          display: none;
+          transition: transform 0.3s ease;
+        }
+
+        .mobile-chevron.rotate {
+          transform: rotate(180deg);
         }
 
         .social-links {
           display: flex;
           gap: 12px;
+          margin-top: 20px;
         }
 
         .social-icon {
@@ -138,22 +195,6 @@ const Footer = () => {
           transform: translateY(-3px);
         }
 
-        .footer h4 {
-          font-size: 1.1rem;
-          margin-bottom: 24px;
-          position: relative;
-        }
-
-        .footer h4::after {
-          content: '';
-          position: absolute;
-          bottom: -8px;
-          left: 0;
-          width: 40px;
-          height: 2px;
-          background: var(--grad-primary);
-        }
-
         .footer ul {
           list-style: none;
           display: flex;
@@ -164,6 +205,7 @@ const Footer = () => {
         .footer ul a {
           color: var(--text-muted);
           font-weight: 500;
+          transition: all 0.2s;
         }
 
         .footer ul a:hover {
@@ -171,21 +213,18 @@ const Footer = () => {
           padding-left: 5px;
         }
 
-        .footer-contact {
+        .contact-info li {
           display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
-
-        .contact-item {
-          display: flex;
-          align-items: center;
+          align-items: flex-start;
           gap: 12px;
           color: var(--text-muted);
+          margin-bottom: 16px;
         }
 
-        .text-primary {
+        .contact-icon {
           color: var(--primary);
+          flex-shrink: 0;
+          margin-top: 3px;
         }
 
         .footer-bottom {
@@ -197,12 +236,9 @@ const Footer = () => {
         }
 
         .footer-bottom a {
-          color: var(--text-main);
+          color: var(--primary);
           font-weight: 600;
-          margin: 0 8px;
         }
-
-        .mb-6 { margin-bottom: 1.5rem; }
 
         @media (max-width: 1024px) {
           .footer-grid {
@@ -211,9 +247,40 @@ const Footer = () => {
           }
         }
 
-        @media (max-width: 640px) {
-          .footer-grid {
-            grid-template-columns: 1fr;
+        @media (max-width: 768px) {
+          .footer { padding-top: 40px; }
+          .footer-grid { grid-template-columns: 1fr; gap: 0; }
+          .footer-brand { margin-bottom: 40px; }
+          
+          .footer h3 {
+            cursor: pointer;
+            padding: 16px 0;
+            margin-bottom: 0;
+            border-bottom: 1px solid var(--border);
+          }
+          
+          .footer h3.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+          }
+
+          .mobile-chevron {
+            display: block;
+          }
+
+          .footer-links, .contact-info {
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            margin-bottom: 0;
+          }
+
+          .footer-links.show, .contact-info.show {
+            max-height: 500px;
+            opacity: 1;
+            padding: 20px 0;
+            margin-bottom: 20px;
           }
         }
       `}</style>

@@ -426,4 +426,45 @@ input, select, textarea {
   h2 { font-size: 1.35rem !important; }
   .page-header h1 { font-size: 1.4rem !important; }
   .btn { padding: 10px 18px; font-size: 0.85rem; }
+  .modal-content { margin: 1rem; padding: 1.25rem; max-height: 85vh; }
+  .modal-overlay { padding: 0.5rem; }
+  .grid-adaptive { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .container { padding: 0 0.75rem; }
+  h1 { font-size: 1.4rem !important; }
+  h2 { font-size: 1.15rem !important; }
+  .page-header h1 { font-size: 1.2rem !important; }
+  .btn { padding: 8px 14px; font-size: 0.8rem; }
+  .glass-card { border-radius: var(--radius-md); }
+  .modal-content { padding: 1rem; border-radius: var(--radius-md); }
+}
+
+/* Toast positioning */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 14px 24px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 0.85rem;
+  z-index: 9999;
+  box-shadow: var(--shadow-lg);
+  max-width: 400px;
+}
+
+.toast-success {
+  background: #10b981;
+  color: white;
+}
+
+.toast-error {
+  background: #ef4444;
+  color: white;
+}
+
+@media (max-width: 480px) {
+  .toast { left: 16px; right: 16px; bottom: 16px; max-width: none; }
 }
